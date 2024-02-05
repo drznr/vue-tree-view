@@ -36,5 +36,9 @@ function collapseAll() {
 
 <template>
   <slot name="controls" :expandAll="expandAll" :collapseAll="collapseAll" />
-  <tree-node v-for="node in data" :node="node" :expanded-map="expandedChildsMap" @expand="expandNode" />
+  <tree-node v-for="node in data" :node="node" :expanded-map="expandedChildsMap" @expand="expandNode">
+    <template #node-content="{ node }">
+      <slot name="node-content" :node="node" />
+    </template>
+  </tree-node>
 </template>
