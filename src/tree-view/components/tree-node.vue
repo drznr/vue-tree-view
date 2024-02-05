@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['expand']);
 
-const expanded = computed(() => !!props.expandedMap.get(props.node.id));
+const expanded = computed(() => props.expandedMap.has(props.node.id));
 </script>
 
 <template>
