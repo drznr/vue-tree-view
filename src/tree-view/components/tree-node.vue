@@ -15,7 +15,7 @@ const expanded = computed(() => props.expandedMap.has(props.node.id));
 <template>
   <ul>
     <li @click.stop="emit('expand', node)">
-      <slot name="node-content" :node="node" />
+      <slot name="node-content" :node="node" :expanded="expanded" />
 
       <tree-node
         v-if="node.children && expanded"
@@ -25,10 +25,16 @@ const expanded = computed(() => props.expandedMap.has(props.node.id));
         :expanded-map="expandedMap"
         @expand="emit('expand', $event)"
       >
-        <template #node-content="{ node }">
-          <slot name="node-content" :node="node" />
+        <template #node-content="{ node, expanded }">
+          <slot name="node-content" :node="node" :expanded="expanded" />
         </template>
       </tree-node>
     </li>
   </ul>
 </template>
+
+<style scoped>
+ul {
+  list-style: none;
+}
+</style>

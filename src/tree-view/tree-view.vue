@@ -72,8 +72,8 @@ function onSearch(term: string) {
     :expanded-map="expandedChildsMap"
     @expand="toggleExpandNode"
   >
-    <template #node-content="{ node }">
-      <slot name="node-content" :node="node" />
+    <template #node-content="{ node, expanded }">
+      <slot name="node-content" :node="node" :expanded="expanded" />
     </template>
   </tree-node>
 </template>
