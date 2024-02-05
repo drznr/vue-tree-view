@@ -4,12 +4,12 @@ import { INode } from '../types';
 
 const props = defineProps<{
   node: INode;
-  expandedMap: Map<string, boolean>;
+  expandedNodes: Set<string>;
 }>();
 
 const emit = defineEmits(['expand']);
 
-const expanded = computed(() => props.expandedMap.has(props.node.id));
+const expanded = computed(() => props.expandedNodes.has(props.node.id));
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const expanded = computed(() => props.expandedMap.has(props.node.id));
         v-for="childNode in node.children"
         :key="childNode.id"
         :node="childNode"
-        :expanded-map="expandedMap"
+        :expanded-nodes="expandedNodes"
         @expand="emit('expand', $event)"
       >
         <template #node-content="{ node, expanded }">

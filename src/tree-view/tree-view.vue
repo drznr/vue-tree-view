@@ -17,26 +17,26 @@ const props = withDefaults(
 
 const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.nodes]));
 
-const expandedChildsMap = ref(new Map());
+const expandedNodes = ref(new Set<string>());
 
 function toggleExpandNode(node: INode) {
   if (!node.children) return;
 
-  if (expandedChildsMap.value.get(node.id)) {
-    expandedChildsMap.value.delete(node.id);
+  if (expandedNodes.value.has(node.id)) {
+    expandedNodes.value.delete(node.id);
     return;
   }
 
-  expandedChildsMap.value.set(node.id, true);
+  expandedNodes.value.add(node.id);
 }
 
 function expandAll() {
-  const handler = (node: INode) => expandedChildsMap.value.set(node.id, true);
+  const handler = (node: INode) => expandedNodes.value.add(node.id);
   data.value.forEach(node => traverse(node, handler));
 }
 
 function collapseAll() {
-  expandedChildsMap.value.clear();
+  expandedNodes.value.clear();
 }
 
 function onSearch(term: string) {
@@ -49,7 +49,7 @@ function onSearch(term: string) {
 
     if (node.name?.toLowerCase().includes(term.toLowerCase())) {
       path.forEach(nodeId => {
-        expandedChildsMap.value.set(nodeId, true);
+        expandedNodes.value.add(nodeId);
       });
     }
   };
@@ -71,13 +71,7 @@ defineExpose({
     :collapseAll="collapseAll"
     :onSearch="debounce(onSearch, props.debounceSearch)"
   />
-  <tree-node
-    v-for="node in data"
-    :key="node.id"
-    :node="node"
-    :expanded-map="expandedChildsMap"
-    @expand="toggleExpandNode"
-  >
+  <tree-node v-for="node in data" :key="node.id" :node="node" :expanded-nodes="expandedNodes" @expand="toggleExpandNode">
     <template #node-content="{ node, expanded }">
       <slot name="node-content" :node="node" :expanded="expanded" />
     </template>
