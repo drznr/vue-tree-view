@@ -20,6 +20,7 @@ const expanded = computed(() => props.expandedMap.has(props.node.id));
       <tree-node
         v-if="node.children && expanded"
         v-for="childNode in node.children"
+        :key="childNode.id"
         :node="childNode"
         :expanded-map="expandedMap"
         @expand="emit('expand', $event)"
