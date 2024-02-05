@@ -56,6 +56,12 @@ function onSearch(term: string) {
 
   data.value.forEach(node => traverse(node, handler));
 }
+
+defineExpose({
+  expandAll,
+  collapseAll,
+  onSearch,
+});
 </script>
 
 <template>
