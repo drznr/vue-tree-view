@@ -13,7 +13,7 @@ const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.n
 
 const expandedChildsMap = ref(new Map());
 
-function expandNode(node: INode) {
+function toggleExpandNode(node: INode) {
   if (!node.children) return;
 
   if (expandedChildsMap.value.get(node.id)) {
@@ -36,7 +36,13 @@ function collapseAll() {
 
 <template>
   <slot name="controls" :expandAll="expandAll" :collapseAll="collapseAll" />
-  <tree-node v-for="node in data" :key="node.id" :node="node" :expanded-map="expandedChildsMap" @expand="expandNode">
+  <tree-node
+    v-for="node in data"
+    :key="node.id"
+    :node="node"
+    :expanded-map="expandedChildsMap"
+    @expand="toggleExpandNode"
+  >
     <template #node-content="{ node }">
       <slot name="node-content" :node="node" />
     </template>
