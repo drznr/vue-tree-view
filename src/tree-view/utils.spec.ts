@@ -9,8 +9,8 @@ describe('Tree View Utils', () => {
       traverse(MOCK_TREE, handlerSpy);
 
       expect(handlerSpy).toHaveBeenCalledTimes(19);
-      expect(handlerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: '1' }));
-      expect(handlerSpy).toHaveBeenLastCalledWith(expect.objectContaining({ id: '10011' }));
+      expect(handlerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: '1' }), 0);
+      expect(handlerSpy).toHaveBeenLastCalledWith(expect.objectContaining({ id: '10011' }), 3);
     });
   });
 

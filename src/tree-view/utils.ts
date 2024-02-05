@@ -1,7 +1,7 @@
 import { INode } from './types';
 
 export function traverse(node: INode, handler: Function, depth = 0) {
-  handler(node);
+  handler(node, depth);
 
   if (node.children) {
     node.children.forEach(childNode => traverse(childNode, handler, depth + 1));
