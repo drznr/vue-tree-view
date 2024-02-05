@@ -2,12 +2,18 @@
 import { computed, ref } from 'vue';
 import { INode } from './types';
 import treeNode from './components/tree-node.vue';
-import { traverse } from './utils';
+import { debounce, traverse } from './utils';
 
-const props = defineProps<{
-  nodes: INode | INode[];
-  expanded?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    nodes: INode | INode[];
+    expanded?: boolean;
+    debounceSearch?: number;
+  }>(),
+  {
+    debounceSearch: 300,
+  }
+);
 
 const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.nodes]));
 
@@ -32,10 +38,33 @@ function expandAll() {
 function collapseAll() {
   expandedChildsMap.value.clear();
 }
+
+function onSearch(term: string) {
+  collapseAll();
+  if (!term) return;
+
+  const path: string[] = [];
+  const handler = (node: INode, depth: number) => {
+    path[depth] = node.id;
+
+    if (node.name?.toLowerCase().includes(term.toLowerCase())) {
+      path.forEach(nodeId => {
+        expandedChildsMap.value.set(nodeId, true);
+      });
+    }
+  };
+
+  data.value.forEach(node => traverse(node, handler));
+}
 </script>
 
 <template>
-  <slot name="controls" :expandAll="expandAll" :collapseAll="collapseAll" />
+  <slot
+    name="controls"
+    :expandAll="expandAll"
+    :collapseAll="collapseAll"
+    :onSearch="debounce(onSearch, props.debounceSearch)"
+  />
   <tree-node
     v-for="node in data"
     :key="node.id"
