@@ -9,12 +9,10 @@ const props = withDefaults(
     nodes: INode | INode[];
     debounceSearch?: number;
     open?: boolean;
-    clickable?: boolean;
     indentValue?: string;
   }>(),
   {
     debounceSearch: 300,
-    clickable: true,
     indentValue: '24px',
   }
 );
@@ -24,7 +22,7 @@ const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.n
 const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<string>());
 
 function toggleExpandNode(node: INode) {
-  if (!props.clickable || !node.children) return;
+  if (!node.children) return;
 
   if (expandedNodes.value.has(node.id)) {
     expandedNodes.value.delete(node.id);
@@ -65,6 +63,7 @@ defineExpose({
   expandAll,
   collapseAll,
   onSearch,
+  toggleExpandNode,
 });
 </script>
 
@@ -82,10 +81,14 @@ defineExpose({
       :node="node"
       :expanded-nodes="expandedNodes"
       :indent-value="indentValue"
-      @expand="toggleExpandNode"
     >
       <template #node-content="scope">
-        <slot name="node-content" :node="scope.node" :expanded="scope.expanded" />
+        <slot
+          name="node-content"
+          :node="scope.node"
+          :expanded="scope.expanded"
+          :toggle-expand="toggleExpandNode.bind(null, scope.node)"
+        />
       </template>
     </tree-node>
   </ul>
