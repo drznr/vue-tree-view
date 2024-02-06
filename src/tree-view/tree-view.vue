@@ -24,12 +24,8 @@ const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<
 function toggleExpandNode(node: INode) {
   if (!node.children) return;
 
-  if (expandedNodes.value.has(node.id)) {
-    expandedNodes.value.delete(node.id);
-    return;
-  }
-
-  expandedNodes.value.add(node.id);
+  if (expandedNodes.value.has(node.id)) expandedNodes.value.delete(node.id);
+  else expandedNodes.value.add(node.id);
 }
 
 function expandAll() {
