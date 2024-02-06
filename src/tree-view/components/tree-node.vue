@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['expand']);
 
-const expanded = computed( () => props.expandedNodes.has(props.node.id));
+const expanded = computed(() => props.expandedNodes.has(props.node.id));
 </script>
 
 <template>
