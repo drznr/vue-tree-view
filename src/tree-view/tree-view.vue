@@ -2,22 +2,24 @@
 import { computed, ref } from 'vue';
 import { INode } from './types';
 import treeNode from './components/tree-node.vue';
-import { debounce, traverse } from './utils';
+import { debounce, traverse, collectAllNodesIds } from './utils';
 
 const props = withDefaults(
   defineProps<{
     nodes: INode | INode[];
     expanded?: boolean;
     debounceSearch?: number;
+    open?: boolean;
   }>(),
   {
     debounceSearch: 300,
+    open: false,
   }
 );
 
 const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.nodes]));
 
-const expandedNodes = ref(new Set<string>());
+const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<string>());
 
 function toggleExpandNode(node: INode) {
   if (!node.children) return;
@@ -31,8 +33,8 @@ function toggleExpandNode(node: INode) {
 }
 
 function expandAll() {
-  const handler = (node: INode) => expandedNodes.value.add(node.id);
-  data.value.forEach(node => traverse(node, handler));
+  const allNodes = collectAllNodesIds(data.value);
+  expandedNodes.value = allNodes;
 }
 
 function collapseAll() {

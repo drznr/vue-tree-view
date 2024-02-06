@@ -22,3 +22,14 @@ export function debounce(func: Function, ms: number) {
     }, ms);
   };
 }
+
+export function collectAllNodesIds(node: INode | INode[]) {
+  const set: Set<string> = new Set();
+  const nodes = Array.isArray(node) ? node : [node];
+
+  nodes.forEach(node => {
+    traverse(node, (node: INode) => set.add(node.id));
+  });
+
+  return set;
+}
