@@ -1,5 +1,5 @@
 export interface INode {
-    id: string;
-    name?: string;
-    children?: INode[];
+  id: string;
+  name?: string;
+  children?: INode[];
 }

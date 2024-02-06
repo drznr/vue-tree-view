@@ -39,6 +39,11 @@ const expanded = computed(() => props.expandedNodes.has(props.node.id));
 </template>
 
 <style scoped>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 ul {
   list-style: none;
 }
