@@ -4,6 +4,18 @@ import { INode } from './types';
 import treeNode from './components/tree-node.vue';
 import { debounce, traverse, collectAllNodesIds } from './utils';
 
+defineSlots<{
+  controls(props: { expandAll: () => void; collapseAll: () => void; onSearch: (term: string) => void }): unknown;
+
+  ['node-content'](props: {
+    node: INode;
+    expanded: boolean;
+    selected: boolean;
+    toggleExpand: () => void;
+    toggleSelection: () => void;
+  }): unknown;
+}>();
+
 const props = withDefaults(
   defineProps<{
     nodes: INode | INode[];
