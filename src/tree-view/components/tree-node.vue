@@ -2,22 +2,24 @@
 import { computed } from 'vue';
 import { INode } from '../types';
 
-const props = defineProps<{
-  node: INode;
-  expandedNodes: Set<string>;
-  indentValue: string;
+defineSlots<{
+  ['node-content'](props: { node: INode; expanded: boolean; selected: boolean }): unknown;
 }>();
 
-defineSlots<{
-  ['node-content'](props: { node: INode; expanded: boolean }): unknown;
+const props = defineProps<{
+  node: INode;
+  indentValue: string;
+  expandedNodes: Set<string>;
+  selectedNodes: Set<string>;
 }>();
 
 const expanded = computed(() => props.expandedNodes.has(props.node.id));
+const selected = computed(() => props.selectedNodes.has(props.node.id));
 </script>
 
 <template>
   <component :is="'li'">
-    <slot name="node-content" :node="node" :expanded="expanded" />
+    <slot name="node-content" :node="node" :expanded="expanded" :selected="selected" />
 
     <template v-if="node.children && expanded">
       <ul :style="{ marginInlineStart: indentValue }">
@@ -26,10 +28,11 @@ const expanded = computed(() => props.expandedNodes.has(props.node.id));
           :key="childNode.id"
           :node="childNode"
           :expanded-nodes="expandedNodes"
+          :selected-nodes="selectedNodes"
           :indent-value="indentValue"
         >
           <template #node-content="scope">
-            <slot name="node-content" :node="scope.node" :expanded="scope.expanded" />
+            <slot name="node-content" :node="scope.node" :expanded="scope.expanded" :selected="scope.selected" />
           </template>
         </tree-node>
       </ul>

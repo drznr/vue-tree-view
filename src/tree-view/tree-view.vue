@@ -16,9 +16,19 @@ defineSlots<{
   }): unknown;
 }>();
 
+defineExpose({
+  expandAll,
+  collapseAll,
+  onSearch,
+  toggleExpand,
+});
+
+const emit = defineEmits(['update:modelValue']);
+
 const props = withDefaults(
   defineProps<{
     nodes: INode | INode[];
+    modelValue?: string[];
     debounceSearch?: number;
     open?: boolean;
     indentValue?: string;
@@ -26,14 +36,16 @@ const props = withDefaults(
   {
     debounceSearch: 300,
     indentValue: '24px',
+    modelValue: () => [],
   }
 );
 
 const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.nodes]));
 
 const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<string>());
+const selectedNodes = ref(new Set<string>());
 
-function toggleExpandNode(node: INode) {
+function toggleExpand(node: INode) {
   if (!node.children) return;
 
   if (expandedNodes.value.has(node.id)) expandedNodes.value.delete(node.id);
@@ -67,12 +79,18 @@ function onSearch(term: string) {
   data.value.forEach(node => traverse(node, handler));
 }
 
-defineExpose({
-  expandAll,
-  collapseAll,
-  onSearch,
-  toggleExpandNode,
-});
+function toggleSelection(baseNode: INode) {
+  const handler = (node: INode) => {
+    if (node.children) return;
+
+    if (selectedNodes.value.has(node.id)) selectedNodes.value.delete(node.id);
+    else selectedNodes.value.add(node.id);
+  };
+
+  traverse(baseNode, handler);
+
+  emit('update:modelValue', Array.from(selectedNodes.value));
+}
 </script>
 
 <template>
@@ -88,6 +106,7 @@ defineExpose({
       :key="node.id"
       :node="node"
       :expanded-nodes="expandedNodes"
+      :selected-nodes="selectedNodes"
       :indent-value="indentValue"
     >
       <template #node-content="scope">
@@ -95,9 +114,24 @@ defineExpose({
           name="node-content"
           :node="scope.node"
           :expanded="scope.expanded"
-          :toggle-expand="toggleExpandNode.bind(null, scope.node)"
+          :selected="scope.selected"
+          :toggle-expand="toggleExpand.bind(null, scope.node)"
+          :toggle-selection="toggleSelection.bind(null, scope.node)"
         />
       </template>
     </tree-node>
   </ul>
 </template>
+
+<style scoped>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+</style>
