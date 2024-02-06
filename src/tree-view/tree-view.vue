@@ -73,15 +73,19 @@ defineExpose({
     :collapse-all="collapseAll"
     :on-search="debounce(onSearch, props.debounceSearch)"
   />
-  <tree-node
-    v-for="node in data"
-    :key="node.id"
-    :node="node"
-    :expanded-nodes="expandedNodes"
-    @expand="toggleExpandNode"
-  >
-    <template #node-content="scope">
-      <slot name="node-content" :node="scope.node" :expanded="scope.expanded" />
-    </template>
-  </tree-node>
+  <ul>
+    <tree-node
+      v-for="node in data"
+      :key="node.id"
+      :node="node"
+      :depth="0"
+      :expanded-nodes="expandedNodes"
+      base-element="li"
+      @expand="toggleExpandNode"
+    >
+      <template #node-content="scope">
+        <slot name="node-content" :node="scope.node" :expanded="scope.expanded" />
+      </template>
+    </tree-node>
+  </ul>
 </template>
