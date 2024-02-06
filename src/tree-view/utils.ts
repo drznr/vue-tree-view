@@ -10,6 +10,7 @@ export function traverse(node: INode, handler: THandler, depth = 0) {
 }
 
 export function debounce<T, R>(func: (...args: T[]) => R, ms: number) {
+  console.log(55);
   let timeout: ReturnType<typeof setTimeout> | undefined;
 
   return function (this: unknown, ...args: T[]) {
