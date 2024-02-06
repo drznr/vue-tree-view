@@ -7,6 +7,10 @@ const props = defineProps<{
   expandedNodes: Set<string>;
 }>();
 
+defineSlots<{
+  ['node-content'](props: { node: INode; expanded: boolean }): any;
+}>();
+
 const emit = defineEmits(['expand']);
 
 const expanded = computed(() => props.expandedNodes.has(props.node.id));

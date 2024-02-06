@@ -11,7 +11,7 @@ export function traverse(node: INode, handler: Function, depth = 0) {
 export function debounce(func: Function, ms: number) {
   let timeout: ReturnType<typeof setTimeout> | undefined;
 
-  return function (...args: unknown[]) {
+  return function (this: unknown, ...args: unknown[]) {
     const context = this;
 
     clearTimeout(timeout);
