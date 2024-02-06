@@ -10,10 +10,12 @@ const props = withDefaults(
     debounceSearch?: number;
     open?: boolean;
     clickable?: boolean;
+    indentValue?: string;
   }>(),
   {
     debounceSearch: 300,
     clickable: true,
+    indentValue: '24px',
   }
 );
 
@@ -78,9 +80,8 @@ defineExpose({
       v-for="node in data"
       :key="node.id"
       :node="node"
-      :depth="0"
       :expanded-nodes="expandedNodes"
-      base-element="li"
+      :indent-value="indentValue"
       @expand="toggleExpandNode"
     >
       <template #node-content="scope">

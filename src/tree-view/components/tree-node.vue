@@ -4,9 +4,8 @@ import { INode } from '../types';
 
 const props = defineProps<{
   node: INode;
-  depth: number;
   expandedNodes: Set<string>;
-  baseElement: keyof HTMLElementTagNameMap;
+  indentValue: string;
 }>();
 
 defineSlots<{
@@ -19,18 +18,17 @@ const expanded = computed(() => props.expandedNodes.has(props.node.id));
 </script>
 
 <template>
-  <component :is="baseElement" @click.stop="emit('expand', node)">
+  <component :is="'li'" @click.stop="emit('expand', node)">
     <slot name="node-content" :node="node" :expanded="expanded" />
 
     <template v-if="node.children && expanded">
-      <ul>
+      <ul :style="{ marginInlineStart: indentValue }">
         <tree-node
           v-for="childNode in node.children"
           :key="childNode.id"
           :node="childNode"
-          :depth="depth + 1"
           :expanded-nodes="expandedNodes"
-          :base-element="baseElement"
+          :indent-value="indentValue"
           @expand="emit('expand', $event)"
         >
           <template #node-content="scope">
