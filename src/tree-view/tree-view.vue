@@ -69,9 +69,9 @@ defineExpose({
 <template>
   <slot
     name="controls"
-    :expandAll="expandAll"
-    :collapseAll="collapseAll"
-    :onSearch="debounce(onSearch, props.debounceSearch)"
+    :expand-all="expandAll"
+    :collapse-all="collapseAll"
+    :on-search="debounce(onSearch, props.debounceSearch)"
   />
   <tree-node
     v-for="node in data"
@@ -80,8 +80,8 @@ defineExpose({
     :expanded-nodes="expandedNodes"
     @expand="toggleExpandNode"
   >
-    <template #node-content="{ node, expanded }">
-      <slot name="node-content" :node="node" :expanded="expanded" />
+    <template #node-content="scope">
+      <slot name="node-content" :node="scope.node" :expanded="scope.expanded" />
     </template>
   </tree-node>
 </template>

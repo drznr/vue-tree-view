@@ -1,6 +1,7 @@
 import { INode } from './types';
 
-export function traverse(node: INode, handler: Function, depth = 0) {
+type THandler = (node: INode, depth: number) => unknown;
+export function traverse(node: INode, handler: THandler, depth = 0) {
   handler(node, depth);
 
   if (node.children) {
@@ -8,17 +9,15 @@ export function traverse(node: INode, handler: Function, depth = 0) {
   }
 }
 
-export function debounce(func: Function, ms: number) {
+export function debounce<T, R>(func: (...args: T[]) => R, ms: number) {
   let timeout: ReturnType<typeof setTimeout> | undefined;
 
-  return function (this: unknown, ...args: unknown[]) {
-    const context = this;
-
+  return function (this: unknown, ...args: T[]) {
     clearTimeout(timeout);
 
-    timeout = setTimeout(function () {
+    timeout = setTimeout(() => {
       timeout = undefined;
-      func.apply(context, args);
+      func.apply(this, args);
     }, ms);
   };
 }
