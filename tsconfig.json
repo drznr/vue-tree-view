@@ -14,5 +14,6 @@
     "allowSyntheticDefaultImports": true,
     "lib": ["dom", "esnext"]
   },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
   "exclude": ["node_modules", "dist"]
 }
