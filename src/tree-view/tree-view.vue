@@ -7,13 +7,13 @@ import { debounce, traverse, collectAllNodesIds } from './utils';
 const props = withDefaults(
   defineProps<{
     nodes: INode | INode[];
-    expanded?: boolean;
     debounceSearch?: number;
     open?: boolean;
+    clickable?: boolean;
   }>(),
   {
     debounceSearch: 300,
-    open: false,
+    clickable: true,
   }
 );
 
@@ -22,7 +22,7 @@ const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.n
 const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<string>());
 
 function toggleExpandNode(node: INode) {
-  if (!node.children) return;
+  if (!props.clickable || !node.children) return;
 
   if (expandedNodes.value.has(node.id)) {
     expandedNodes.value.delete(node.id);
