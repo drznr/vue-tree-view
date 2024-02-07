@@ -8,6 +8,8 @@ defineSlots<{
   controls(props: {
     expandAll: VoidFunction;
     collapseAll: VoidFunction;
+    selectAll: VoidFunction;
+    unselectAll: VoidFunction;
     onSearch: (term: string) => void;
     expandToSelection: VoidFunction;
   }): unknown;
@@ -60,8 +62,8 @@ function toggleExpand(node: INode) {
 }
 
 function expandAll() {
-  const allNodes = collectAllNodesIds(data.value);
-  expandedNodes.value = allNodes;
+  const allNodeIds = collectAllNodesIds(data.value);
+  expandedNodes.value = allNodeIds;
 }
 
 function collapseAll() {
@@ -99,6 +101,15 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
+function selectAll() {
+  const allNodeIds = collectAllNodesIds(data.value);
+  selectedNodes.value = allNodeIds;
+}
+
+function unselectAll() {
+  selectedNodes.value.clear();
+}
+
 function expandToSelection() {
   collapseAll();
   if (selectedNodes.value.size === 0) return;
@@ -123,6 +134,8 @@ function expandToSelection() {
     name="controls"
     :expand-all="expandAll"
     :collapse-all="collapseAll"
+    :select-all="selectAll"
+    :unselect-all="unselectAll"
     :on-search="debounce(onSearch, props.debounceSearch)"
     :expand-to-selection="expandToSelection"
   />
