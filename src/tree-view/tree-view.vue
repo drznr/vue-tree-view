@@ -11,6 +11,7 @@ defineSlots<{
     node: INode;
     expanded: boolean;
     selected: boolean;
+    indeterminate: boolean;
     toggleExpand: () => void;
     toggleSelection: (isUnselect: boolean) => void;
   }): unknown;
@@ -115,6 +116,7 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
           :node="scope.node"
           :expanded="scope.expanded"
           :selected="scope.selected"
+          :indeterminate="scope.indeterminate"
           :toggle-expand="() => toggleExpand(scope.node)"
           :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
         />

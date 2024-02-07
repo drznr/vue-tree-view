@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { INode } from '../types';
-import { traverseAndCheckAll } from '../utils';
+import { traverseAndCheck, traverseAndCheckAll } from '../utils';
 
 defineSlots<{
-  ['node-content'](props: { node: INode; expanded: boolean; selected: boolean }): unknown;
+  ['node-content'](props: { node: INode; expanded: boolean; selected: boolean; indeterminate: boolean }): unknown;
 }>();
 
 const props = defineProps<{
@@ -14,17 +14,26 @@ const props = defineProps<{
   selectedNodes: Set<string>;
 }>();
 
-const expanded = computed(() => props.expandedNodes.has(props.node.id));
-const selected = computed(() => {
-  return traverseAndCheckAll(props.node, node => !!node.children?.length || props.selectedNodes.has(node.id));
-});
+const isExpanded = computed(() => props.expandedNodes.has(props.node.id));
+const isSelected = computed(() =>
+  traverseAndCheckAll(props.node, node => !!node.children?.length || props.selectedNodes.has(node.id))
+);
+const isChildSelected = computed(
+  () => !isSelected.value && traverseAndCheck(props.node, node => props.selectedNodes.has(node.id))
+);
 </script>
 
 <template>
   <component :is="'li'">
-    <slot name="node-content" :node="node" :expanded="expanded" :selected="selected" />
+    <slot
+      name="node-content"
+      :node="node"
+      :expanded="isExpanded"
+      :selected="isSelected"
+      :indeterminate="isChildSelected"
+    />
 
-    <template v-if="node.children?.length && expanded">
+    <template v-if="node.children?.length && isExpanded">
       <ul :style="{ marginInlineStart: indentValue }">
         <tree-node
           v-for="childNode in node.children"
@@ -35,7 +44,13 @@ const selected = computed(() => {
           :indent-value="indentValue"
         >
           <template #node-content="scope">
-            <slot name="node-content" :node="scope.node" :expanded="scope.expanded" :selected="scope.selected" />
+            <slot
+              name="node-content"
+              :node="scope.node"
+              :expanded="scope.expanded"
+              :selected="scope.selected"
+              :indeterminate="scope.indeterminate"
+            />
           </template>
         </tree-node>
       </ul>
