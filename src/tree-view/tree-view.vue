@@ -10,7 +10,7 @@ defineSlots<{
     collapseAll: VoidFunction;
     selectAll: VoidFunction;
     unselectAll: VoidFunction;
-    onSearch: (conditionFn: ConditionFn) => void;
+    search: (conditionFn: ConditionFn) => void;
     expandToSelection: VoidFunction;
   }): unknown;
 
@@ -27,7 +27,7 @@ defineSlots<{
 defineExpose({
   expandAll,
   collapseAll,
-  onSearch,
+  search,
   toggleExpand,
   expandToSelection,
 });
@@ -70,7 +70,7 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-function onSearch(conditionFn: ConditionFn) {
+function search(conditionFn: ConditionFn) {
   collapseAll();
 
   const path: string[] = [];
@@ -135,7 +135,7 @@ function expandToSelection() {
     :collapse-all="collapseAll"
     :select-all="selectAll"
     :unselect-all="unselectAll"
-    :on-search="debounce(onSearch, props.debounceSearch)"
+    :search="debounce(search, props.debounceSearch)"
     :expand-to-selection="expandToSelection"
   />
   <ul>
