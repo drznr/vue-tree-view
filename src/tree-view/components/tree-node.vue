@@ -57,19 +57,3 @@ const isChildSelected = computed(
     </template>
   </component>
 </template>
-
-<style scoped>
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-li {
-  padding: 0;
-}
-</style>

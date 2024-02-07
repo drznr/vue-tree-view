@@ -128,12 +128,20 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
 <style scoped>
 *,
 *::before,
-*::after {
+*::after,
+:deep(*, *::before, *::after) {
   box-sizing: border-box;
 }
-ul {
+
+ul,
+:deep(ul) {
   list-style: none;
   margin: 0;
+  padding: 0;
+}
+
+li,
+:deep(li) {
   padding: 0;
 }
 </style>
