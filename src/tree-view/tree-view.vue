@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { INode } from './types';
+import { ConditionFn, INode } from './types';
 import treeNode from './components/tree-node.vue';
 import { debounce, traverse, getAllNodesValuesUnique } from './utils';
 
@@ -10,7 +10,7 @@ defineSlots<{
     collapseAll: VoidFunction;
     selectAll: VoidFunction;
     unselectAll: VoidFunction;
-    onSearch: (term: string) => void;
+    onSearch: (conditionFn: ConditionFn) => void;
     expandToSelection: VoidFunction;
   }): unknown;
 
@@ -70,15 +70,14 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-function onSearch(term: string) {
+function onSearch(conditionFn: ConditionFn) {
   collapseAll();
-  if (!term) return;
 
   const path: string[] = [];
   const handler = (node: INode, depth: number) => {
     path[depth] = node.id;
 
-    if (node.name?.toLowerCase().includes(term.toLowerCase())) {
+    if (conditionFn(node)) {
       path.forEach(nodeId => {
         expandedNodes.value.add(nodeId);
       });

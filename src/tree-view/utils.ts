@@ -45,10 +45,10 @@ export function traverseAndCheckAll(
   return true;
 }
 
-export function debounce<A, R>(fn: (...args: A[]) => R, ms: number) {
+export function debounce<A extends unknown[], R>(fn: (...args: A) => R, ms: number) {
   let timeoutId: ReturnType<typeof setTimeout>;
 
-  return function (this: unknown, ...args: A[]) {
+  return function (this: unknown, ...args: A) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };

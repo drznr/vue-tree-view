@@ -3,3 +3,5 @@ export interface INode {
   name?: string;
   children?: INode[];
 }
+
+export type ConditionFn = (node: INode) => boolean;
