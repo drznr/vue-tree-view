@@ -5,14 +5,19 @@ import treeNode from './components/tree-node.vue';
 import { debounce, traverse, collectAllNodesIds } from './utils';
 
 defineSlots<{
-  controls(props: { expandAll: () => void; collapseAll: () => void; onSearch: (term: string) => void }): unknown;
+  controls(props: {
+    expandAll: VoidFunction;
+    collapseAll: VoidFunction;
+    onSearch: (term: string) => void;
+    expandToSelection: VoidFunction;
+  }): unknown;
 
   ['node-content'](props: {
     node: INode;
     expanded: boolean;
     selected: boolean;
     indeterminate: boolean;
-    toggleExpand: () => void;
+    toggleExpand: VoidFunction;
     toggleSelection: (isUnselect: boolean) => void;
   }): unknown;
 }>();
@@ -22,6 +27,7 @@ defineExpose({
   collapseAll,
   onSearch,
   toggleExpand,
+  expandToSelection,
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -92,6 +98,24 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
 
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
+
+function expandToSelection() {
+  collapseAll();
+  if (selectedNodes.value.size === 0) return;
+
+  const path: string[] = [];
+  const handler = (node: INode, depth: number) => {
+    path[depth] = node.id;
+
+    if (selectedNodes.value.has(node.id)) {
+      path.forEach(nodeId => {
+        expandedNodes.value.add(nodeId);
+      });
+    }
+  };
+
+  data.value.forEach(node => traverse(node, handler));
+}
 </script>
 
 <template>
@@ -100,6 +124,7 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
     :expand-all="expandAll"
     :collapse-all="collapseAll"
     :on-search="debounce(onSearch, props.debounceSearch)"
+    :expand-to-selection="expandToSelection"
   />
   <ul>
     <tree-node
