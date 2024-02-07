@@ -1,5 +1,5 @@
 import { MOCK_TREE } from './__mocks__/tree.mock';
-import { debounce, traverse, collectAllNodesIds } from './utils';
+import { debounce, traverse, collectAllNodesIds, traverseAndCheck, traverseAndCheckAll } from './utils';
 
 describe('Tree View Utils', () => {
   describe('traverse()', () => {
@@ -67,6 +67,36 @@ describe('Tree View Utils', () => {
           '102',
         ])
       );
+    });
+  });
+
+  describe('traverseAndCheck()', () => {
+    it('should return true if one node meet given condition fn', () => {
+      expect(traverseAndCheck(MOCK_TREE, node => node.id === '1')).toBe(true);
+      expect(traverseAndCheck(MOCK_TREE, node => node.id === '10006')).toBe(true);
+      expect(traverseAndCheck(MOCK_TREE, node => node.name === 'Leopard')).toBe(true);
+      expect(traverseAndCheck(MOCK_TREE, node => node.id === '102')).toBe(true);
+      expect(traverseAndCheck(MOCK_TREE, node => node.id === '1003')).toBe(true);
+    });
+
+    it('should return false if any node does not meet given condition fn', () => {
+      expect(traverseAndCheck(MOCK_TREE, node => node.id === '100066')).toBe(false);
+      expect(traverseAndCheck(MOCK_TREE, node => node.name === 'Mouse')).toBe(false);
+    });
+  });
+
+  describe('traverseAndCheckAll()', () => {
+    it('should return true if all nodes meet given condition fn', () => {
+      expect(traverseAndCheckAll(MOCK_TREE, node => typeof node.id === 'string')).toBe(true);
+      expect(traverseAndCheckAll(MOCK_TREE, node => !!node.name)).toBe(true);
+      expect(traverseAndCheckAll(MOCK_TREE, node => !node.children || !!node.children.length)).toBe(true);
+      expect(traverseAndCheckAll(MOCK_TREE, node => !!node.children?.length || +node.id > 10_000)).toBe(true);
+    });
+
+    it('should return false if any node does not meet given condition fn', () => {
+      expect(traverseAndCheckAll(MOCK_TREE, node => node.id === '10006')).toBe(false);
+      expect(traverseAndCheckAll(MOCK_TREE, node => !!node.children?.length)).toBe(false);
+      expect(traverseAndCheckAll(MOCK_TREE, node => !!node.children?.length && +node.id > 10_000)).toBe(false);
     });
   });
 });

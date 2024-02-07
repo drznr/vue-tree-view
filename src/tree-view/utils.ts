@@ -9,6 +9,42 @@ export function traverse(node: INode, handler: THandler, depth = 0) {
   }
 }
 
+export function traverseAndCheck(
+  node: INode,
+  conditionFn: (node: INode, depth: number) => boolean,
+  depth = 0
+): boolean {
+  if (conditionFn(node, depth)) {
+    return true;
+  }
+
+  if (node.children?.length) {
+    for (const childNode of node.children) {
+      if (traverseAndCheck(childNode, conditionFn, depth + 1)) return true;
+    }
+  }
+
+  return false;
+}
+
+export function traverseAndCheckAll(
+  node: INode,
+  conditionFn: (node: INode, depth: number) => boolean,
+  depth = 0
+): boolean {
+  if (!conditionFn(node, depth)) {
+    return false;
+  }
+
+  if (node.children?.length) {
+    for (const childNode of node.children) {
+      if (!traverseAndCheckAll(childNode, conditionFn, depth + 1)) return false;
+    }
+  }
+
+  return true;
+}
+
 export function debounce<T, R>(func: (...args: T[]) => R, ms: number) {
   let timeout: ReturnType<typeof setTimeout> | undefined;
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { INode } from '../types';
+import { traverseAndCheckAll } from '../utils';
 
 defineSlots<{
   ['node-content'](props: { node: INode; expanded: boolean; selected: boolean }): unknown;
@@ -14,7 +15,9 @@ const props = defineProps<{
 }>();
 
 const expanded = computed(() => props.expandedNodes.has(props.node.id));
-const selected = computed(() => props.selectedNodes.has(props.node.id));
+const selected = computed(() => {
+  return traverseAndCheckAll(props.node, node => !!node.children?.length || props.selectedNodes.has(node.id));
+});
 </script>
 
 <template>
