@@ -45,16 +45,12 @@ export function traverseAndCheckAll(
   return true;
 }
 
-export function debounce<T, R>(func: (...args: T[]) => R, ms: number) {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
+export function debounce<A, R>(fn: (...args: A[]) => R, ms: number) {
+  let timeoutId: ReturnType<typeof setTimeout>;
 
-  return function (this: unknown, ...args: T[]) {
-    clearTimeout(timeout);
-
-    timeout = setTimeout(() => {
-      timeout = undefined;
-      func.apply(this, args);
-    }, ms);
+  return function (this: unknown, ...args: A[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
 }
 
