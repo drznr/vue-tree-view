@@ -21,7 +21,7 @@ const selected = computed(() => props.selectedNodes.has(props.node.id));
   <component :is="'li'">
     <slot name="node-content" :node="node" :expanded="expanded" :selected="selected" />
 
-    <template v-if="node.children && expanded">
+    <template v-if="node.children?.length && expanded">
       <ul :style="{ marginInlineStart: indentValue }">
         <tree-node
           v-for="childNode in node.children"

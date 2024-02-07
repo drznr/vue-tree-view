@@ -46,7 +46,7 @@ const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<
 const selectedNodes = ref(new Set<string>());
 
 function toggleExpand(node: INode) {
-  if (!node.children) return;
+  if (!node.children?.length) return;
 
   if (expandedNodes.value.has(node.id)) expandedNodes.value.delete(node.id);
   else expandedNodes.value.add(node.id);
@@ -81,7 +81,7 @@ function onSearch(term: string) {
 
 function toggleSelection(baseNode: INode) {
   const handler = (node: INode) => {
-    if (node.children) return;
+    if (node.children?.length) return;
 
     if (selectedNodes.value.has(node.id)) selectedNodes.value.delete(node.id);
     else selectedNodes.value.add(node.id);

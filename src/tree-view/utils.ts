@@ -4,7 +4,7 @@ type THandler = (node: INode, depth: number) => unknown;
 export function traverse(node: INode, handler: THandler, depth = 0) {
   handler(node, depth);
 
-  if (node.children) {
+  if (node.children?.length) {
     node.children.forEach(childNode => traverse(childNode, handler, depth + 1));
   }
 }
