@@ -58,12 +58,15 @@ export function debounce<T, R>(func: (...args: T[]) => R, ms: number) {
   };
 }
 
-export function collectAllNodesIds(node: INode | INode[]) {
-  const set: Set<string> = new Set();
-  const nodes = Array.isArray(node) ? node : [node];
+export function getAllNodesValuesUnique<T extends INode[keyof INode]>(
+  baseNode: INode | INode[],
+  prop: keyof INode = 'id'
+) {
+  const set: Set<T> = new Set();
+  const nodes = Array.isArray(baseNode) ? baseNode : [baseNode];
 
   nodes.forEach(node => {
-    traverse(node, (node: INode) => set.add(node.id));
+    traverse(node, (currentNode: INode) => set.add(currentNode[prop] as T));
   });
 
   return set;

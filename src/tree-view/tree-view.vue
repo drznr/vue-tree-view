@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { INode } from './types';
 import treeNode from './components/tree-node.vue';
-import { debounce, traverse, collectAllNodesIds } from './utils';
+import { debounce, traverse, getAllNodesValuesUnique } from './utils';
 
 defineSlots<{
   controls(props: {
@@ -51,7 +51,7 @@ const props = withDefaults(
 
 const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.nodes]));
 
-const expandedNodes = ref(props.open ? collectAllNodesIds(data.value) : new Set<string>());
+const expandedNodes = ref(props.open ? getAllNodesValuesUnique<string>(data.value) : new Set<string>());
 const selectedNodes = ref(new Set<string>());
 
 function toggleExpand(node: INode) {
@@ -62,7 +62,7 @@ function toggleExpand(node: INode) {
 }
 
 function expandAll() {
-  const allNodeIds = collectAllNodesIds(data.value);
+  const allNodeIds = getAllNodesValuesUnique<string>(data.value);
   expandedNodes.value = allNodeIds;
 }
 
@@ -102,7 +102,7 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
 }
 
 function selectAll() {
-  const allNodeIds = collectAllNodesIds(data.value);
+  const allNodeIds = getAllNodesValuesUnique<string>(data.value);
   selectedNodes.value = allNodeIds;
 }
 

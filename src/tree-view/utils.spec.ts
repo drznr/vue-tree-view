@@ -1,5 +1,5 @@
 import { MOCK_TREE } from './__mocks__/tree.mock';
-import { debounce, traverse, collectAllNodesIds, traverseAndCheck, traverseAndCheckAll } from './utils';
+import { debounce, traverse, getAllNodesValuesUnique, traverseAndCheck, traverseAndCheckAll } from './utils';
 
 describe('Tree View Utils', () => {
   describe('traverse()', () => {
@@ -42,9 +42,9 @@ describe('Tree View Utils', () => {
     });
   });
 
-  describe('collectAllNodesIds()', () => {
+  describe('getAllNodesValuesUnique()', () => {
     it('should collect all node ids to a set', () => {
-      expect(collectAllNodesIds(MOCK_TREE)).toEqual(
+      expect(getAllNodesValuesUnique(MOCK_TREE)).toEqual(
         new Set([
           '1',
           '10001',
