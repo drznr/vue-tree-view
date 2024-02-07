@@ -12,7 +12,7 @@ defineSlots<{
     expanded: boolean;
     selected: boolean;
     toggleExpand: () => void;
-    toggleSelection: () => void;
+    toggleSelection: (isUnselect: boolean) => void;
   }): unknown;
 }>();
 
@@ -79,11 +79,11 @@ function onSearch(term: string) {
   data.value.forEach(node => traverse(node, handler));
 }
 
-function toggleSelection(baseNode: INode) {
+function toggleSelection(baseNode: INode, isUnselect: boolean) {
   const handler = (node: INode) => {
     if (node.children?.length) return;
 
-    if (selectedNodes.value.has(node.id)) selectedNodes.value.delete(node.id);
+    if (isUnselect) selectedNodes.value.delete(node.id);
     else selectedNodes.value.add(node.id);
   };
 
@@ -116,7 +116,7 @@ function toggleSelection(baseNode: INode) {
           :expanded="scope.expanded"
           :selected="scope.selected"
           :toggle-expand="() => toggleExpand(scope.node)"
-          :toggle-selection="() => toggleSelection(scope.node)"
+          :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
         />
       </template>
     </tree-node>
