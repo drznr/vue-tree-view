@@ -115,8 +115,8 @@ function toggleSelection(baseNode: INode) {
           :node="scope.node"
           :expanded="scope.expanded"
           :selected="scope.selected"
-          :toggle-expand="toggleExpand.bind(null, scope.node)"
-          :toggle-selection="toggleSelection.bind(null, scope.node)"
+          :toggle-expand="() => toggleExpand(scope.node)"
+          :toggle-selection="() => toggleSelection(scope.node)"
         />
       </template>
     </tree-node>
