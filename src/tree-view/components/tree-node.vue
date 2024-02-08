@@ -10,7 +10,7 @@ defineSlots<{
 const props = withDefaults(
   defineProps<{
     node: INode;
-    indentValue: string;
+    indentPx: number;
     expandedNodes: Set<string>;
     selectedNodes: Set<string>;
     rootElement?: keyof HTMLElementTagNameMap;
@@ -40,14 +40,14 @@ const isChildSelected = computed(
     />
 
     <template v-if="node.children?.length && isExpanded">
-      <ul :style="{ marginInlineStart: indentValue }">
+      <ul :style="{ marginInlineStart: indentPx + 'px' }">
         <tree-node
           v-for="childNode in node.children"
           :key="childNode.id"
           :node="childNode"
           :expanded-nodes="expandedNodes"
           :selected-nodes="selectedNodes"
-          :indent-value="indentValue"
+          :indent-px="indentPx"
         >
           <template #node-content="scope">
             <slot

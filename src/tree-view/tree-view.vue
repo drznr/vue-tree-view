@@ -44,11 +44,11 @@ const props = withDefaults(
     modelValue?: string[];
     debounceMs?: number;
     defaultExpandAll?: boolean;
-    indentValue?: string;
+    indentPx?: number;
   }>(),
   {
     debounceMs: 300,
-    indentValue: '24px',
+    indentPx: 24,
     modelValue: () => [],
   }
 );
@@ -165,7 +165,7 @@ function resetFilter() {
       :node="node"
       :expanded-nodes="expandedNodes"
       :selected-nodes="selectedNodes"
-      :indent-value="indentValue"
+      :indent-px="indentPx"
     >
       <template #node-content="scope">
         <slot
