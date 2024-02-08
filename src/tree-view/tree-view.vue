@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { ConditionFn, INode } from './types';
 import treeNode from './components/tree-node.vue';
-import { debounce, traverse, getAllNodesValuesUnique } from './utils';
+import { debounce, traverse, getAllNodesValuesUnique, filterNodes } from './utils';
 
 defineSlots<{
   controls(props: {
@@ -10,8 +10,10 @@ defineSlots<{
     collapseAll: VoidFunction;
     selectAll: VoidFunction;
     unselectAll: VoidFunction;
-    search: (conditionFn: ConditionFn) => void;
     expandToSelection: VoidFunction;
+    resetFilter: VoidFunction;
+    filter: (conditionFn: ConditionFn) => void;
+    search: (conditionFn: ConditionFn) => void;
   }): unknown;
 
   ['node-content'](props: {
@@ -30,6 +32,8 @@ defineExpose({
   search,
   toggleExpand,
   expandToSelection,
+  filter,
+  resetFilter,
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -38,20 +42,22 @@ const props = withDefaults(
   defineProps<{
     nodes: INode | INode[];
     modelValue?: string[];
-    debounceSearch?: number;
+    debounceMs?: number;
     open?: boolean;
     indentValue?: string;
   }>(),
   {
-    debounceSearch: 300,
+    debounceMs: 300,
     indentValue: '24px',
     modelValue: () => [],
   }
 );
 
-const data = computed(() => (Array.isArray(props.nodes) ? props.nodes : [props.nodes]));
+const clone = structuredClone(props.nodes);
+const nodesCopy = Array.isArray(clone) ? clone : [clone];
+const nodesModel = ref(nodesCopy);
 
-const expandedNodes = ref(props.open ? getAllNodesValuesUnique<string>(data.value) : new Set<string>());
+const expandedNodes = ref(props.open ? getAllNodesValuesUnique<string>(nodesModel.value) : new Set<string>());
 const selectedNodes = ref(new Set<string>());
 
 function toggleExpand(node: INode) {
@@ -62,7 +68,7 @@ function toggleExpand(node: INode) {
 }
 
 function expandAll() {
-  const allNodeIds = getAllNodesValuesUnique<string>(data.value);
+  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value);
   expandedNodes.value = allNodeIds;
 }
 
@@ -84,7 +90,7 @@ function search(conditionFn: ConditionFn) {
     }
   };
 
-  data.value.forEach(node => traverse(node, handler));
+  nodesModel.value.forEach(node => traverse(node, handler));
 }
 
 function toggleSelection(baseNode: INode, isUnselect: boolean) {
@@ -101,7 +107,7 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
 }
 
 function selectAll() {
-  const allNodeIds = getAllNodesValuesUnique<string>(data.value);
+  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value);
   selectedNodes.value = allNodeIds;
 }
 
@@ -124,7 +130,17 @@ function expandToSelection() {
     }
   };
 
-  data.value.forEach(node => traverse(node, handler));
+  nodesModel.value.forEach(node => traverse(node, handler));
+}
+
+function filter(conditionFn: ConditionFn) {
+  nodesModel.value = filterNodes(nodesModel.value, conditionFn);
+  expandAll();
+}
+
+function resetFilter() {
+  nodesModel.value = nodesCopy;
+  collapseAll();
 }
 </script>
 
@@ -135,12 +151,14 @@ function expandToSelection() {
     :collapse-all="collapseAll"
     :select-all="selectAll"
     :unselect-all="unselectAll"
-    :search="debounce(search, props.debounceSearch)"
+    :search="debounce(search, props.debounceMs)"
+    :filter="debounce(filter, props.debounceMs)"
+    :reset-filter="resetFilter"
     :expand-to-selection="expandToSelection"
   />
   <ul>
     <tree-node
-      v-for="node in data"
+      v-for="node in nodesModel"
       :key="node.id"
       :node="node"
       :expanded-nodes="expandedNodes"

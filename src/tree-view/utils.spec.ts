@@ -1,5 +1,12 @@
 import { MOCK_TREE } from './__mocks__/tree.mock';
-import { debounce, traverse, getAllNodesValuesUnique, traverseAndCheck, traverseAndCheckAll } from './utils';
+import {
+  debounce,
+  traverse,
+  getAllNodesValuesUnique,
+  traverseAndCheck,
+  traverseAndCheckAll,
+  filterNodes,
+} from './utils';
 
 describe('Tree View Utils', () => {
   describe('traverse()', () => {
@@ -97,6 +104,78 @@ describe('Tree View Utils', () => {
       expect(traverseAndCheckAll(MOCK_TREE, node => node.id === '10006')).toBe(false);
       expect(traverseAndCheckAll(MOCK_TREE, node => !!node.children?.length)).toBe(false);
       expect(traverseAndCheckAll(MOCK_TREE, node => !!node.children?.length && +node.id > 10_000)).toBe(false);
+    });
+  });
+
+  describe('filterNodes()', () => {
+    it('should return filtered nodes that meet condition fn', () => {
+      expect(filterNodes([MOCK_TREE], node => node.name === 'Flying lizard')).toEqual([
+        {
+          id: '1',
+          name: 'Animals',
+          children: [
+            {
+              id: '102',
+              name: 'Reptiles',
+              children: [
+                {
+                  id: '1003',
+                  name: 'Lizards',
+                  children: [
+                    {
+                      id: '10007',
+                      name: 'Flying lizard',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+
+      expect(filterNodes([MOCK_TREE], node => node.name?.split(' ').length === 3)).toEqual([
+        {
+          id: '1',
+          name: 'Animals',
+          children: [
+            {
+              id: '102',
+              name: 'Reptiles',
+              children: [
+                {
+                  id: '1003',
+                  name: 'Lizards',
+                  children: [
+                    {
+                      id: '10006',
+                      name: 'Western green lizard',
+                    },
+                  ],
+                },
+                {
+                  id: '1005',
+                  name: 'Turtles',
+                  children: [
+                    {
+                      id: '10009',
+                      name: 'Common snapping turtle',
+                    },
+                    {
+                      id: '10011',
+                      name: 'Chinese softshell turtle',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it('should return null if no nodes meet condition fn', () => {
+      expect(filterNodes([MOCK_TREE], node => node.name === 'MISSING VALUE')).toEqual([]);
     });
   });
 });

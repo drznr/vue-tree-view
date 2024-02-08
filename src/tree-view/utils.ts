@@ -1,4 +1,4 @@
-import { INode } from './types';
+import { ConditionFn, INode } from './types';
 
 type THandler = (node: INode, depth: number) => unknown;
 export function traverse(node: INode, handler: THandler, depth = 0) {
@@ -55,15 +55,35 @@ export function debounce<A extends unknown[], R>(fn: (...args: A) => R, ms: numb
 }
 
 export function getAllNodesValuesUnique<T extends INode[keyof INode]>(
-  baseNode: INode | INode[],
+  rootNode: INode | INode[],
   prop: keyof INode = 'id'
 ) {
   const set: Set<T> = new Set();
-  const nodes = Array.isArray(baseNode) ? baseNode : [baseNode];
+  const nodes = Array.isArray(rootNode) ? rootNode : [rootNode];
 
   nodes.forEach(node => {
     traverse(node, (currentNode: INode) => set.add(currentNode[prop] as T));
   });
 
   return set;
+}
+
+export function filterNodes(nodes: INode[], conditionFn: ConditionFn): INode[] {
+  const filteredNodes: INode[] = [];
+
+  nodes.forEach(node => {
+    if (conditionFn(node)) {
+      filteredNodes.push({ ...node });
+    }
+
+    if (node.children?.length) {
+      const filteredChildren = filterNodes(node.children, conditionFn);
+
+      if (filteredChildren.length) {
+        filteredNodes.push({ ...node, children: filteredChildren });
+      }
+    }
+  });
+
+  return filteredNodes;
 }
