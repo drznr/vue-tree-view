@@ -7,12 +7,18 @@ defineSlots<{
   ['node-content'](props: { node: INode; expanded: boolean; selected: boolean; indeterminate: boolean }): unknown;
 }>();
 
-const props = defineProps<{
-  node: INode;
-  indentValue: string;
-  expandedNodes: Set<string>;
-  selectedNodes: Set<string>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    node: INode;
+    indentValue: string;
+    expandedNodes: Set<string>;
+    selectedNodes: Set<string>;
+    rootElement?: keyof HTMLElementTagNameMap;
+  }>(),
+  {
+    rootElement: 'li',
+  }
+);
 
 const isExpanded = computed(() => props.expandedNodes.has(props.node.id));
 const isSelected = computed(() =>
@@ -24,7 +30,7 @@ const isChildSelected = computed(
 </script>
 
 <template>
-  <component :is="'li'">
+  <component :is="props.rootElement">
     <slot
       name="node-content"
       :node="node"
