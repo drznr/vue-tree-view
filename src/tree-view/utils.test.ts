@@ -10,7 +10,7 @@ import {
 
 describe('Tree View Utils', () => {
   describe('traverse()', () => {
-    const handlerSpy = jest.fn();
+    const handlerSpy = vitest.fn();
 
     it('should run given handler for all tree nodes', () => {
       traverse(MOCK_TREE, handlerSpy);
@@ -23,28 +23,28 @@ describe('Tree View Utils', () => {
 
   describe('debounce()', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vitest.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vitest.useRealTimers();
     });
 
     it('should debounce function calls', () => {
-      const callback = jest.fn();
+      const callback = vitest.fn();
       const debounced = debounce(callback, 500);
 
       debounced();
       expect(callback).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(100);
+      vitest.advanceTimersByTime(100);
       debounced();
       expect(callback).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(499);
+      vitest.advanceTimersByTime(499);
       expect(callback).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(1);
+      vitest.advanceTimersByTime(1);
       expect(callback).toHaveBeenCalledTimes(1);
     });
   });

@@ -14,7 +14,8 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
-    "lib": ["dom", "esnext"]
+    "lib": ["dom", "esnext"],
+    "types": ["vitest/globals"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
