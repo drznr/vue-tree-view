@@ -43,7 +43,7 @@ const props = withDefaults(
     nodes: INode | INode[];
     modelValue?: string[];
     debounceMs?: number;
-    open?: boolean;
+    defaultExpandAll?: boolean;
     indentValue?: string;
   }>(),
   {
@@ -57,7 +57,9 @@ const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
 const nodesModel = ref(nodesCopy);
 
-const expandedNodes = ref(props.open ? getAllNodesValuesUnique<string>(nodesModel.value) : new Set<string>());
+const expandedNodes = ref(
+  props.defaultExpandAll ? getAllNodesValuesUnique<string>(nodesModel.value) : new Set<string>()
+);
 const selectedNodes = ref(new Set<string>());
 
 function toggleExpand(node: INode) {
