@@ -30,7 +30,7 @@ const isChildSelected = computed(
 </script>
 
 <template>
-  <component :is="props.rootElement">
+  <component :is="rootElement">
     <slot
       name="node-content"
       :node="node"

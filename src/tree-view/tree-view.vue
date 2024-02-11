@@ -110,11 +110,14 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
 
 function selectAll() {
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value);
+
   selectedNodes.value = allNodeIds;
+  emit('update:modelValue', Array.from(allNodeIds));
 }
 
 function unselectAll() {
   selectedNodes.value.clear();
+  emit('update:modelValue', []);
 }
 
 function expandToSelection() {
@@ -136,6 +139,7 @@ function expandToSelection() {
 }
 
 function filter(conditionFn: ConditionFn) {
+  resetFilter();
   nodesModel.value = filterNodes(nodesModel.value, conditionFn);
   expandAll();
 }
@@ -153,8 +157,8 @@ function resetFilter() {
     :collapse-all="collapseAll"
     :select-all="selectAll"
     :unselect-all="unselectAll"
-    :search="debounce(search, props.debounceMs)"
-    :filter="debounce(filter, props.debounceMs)"
+    :search="debounce(search, debounceMs)"
+    :filter="debounce(filter, debounceMs)"
     :reset-filter="resetFilter"
     :expand-to-selection="expandToSelection"
   />
