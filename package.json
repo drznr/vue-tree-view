@@ -1,5 +1,5 @@
 {
-  "name": "tree-view",
+  "name": "vue-tree-view",
   "private": true,
   "version": "0.0.1",
   "description": "Tree view headless component for Vue 3",
