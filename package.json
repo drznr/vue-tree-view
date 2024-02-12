@@ -21,7 +21,9 @@
     "vue",
     "vue3",
     "component",
-    "library"
+    "library",
+    "tree",
+    " tree view"
   ],
   "author": "Daniel Dresner",
   "scripts": {
