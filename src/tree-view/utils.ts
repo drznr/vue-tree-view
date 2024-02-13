@@ -1,4 +1,4 @@
-import { ConditionFn, INode } from './types';
+import type { ConditionFn, INode } from './types';
 
 type THandler = (node: INode, depth: number) => unknown;
 export function traverse(node: INode, handler: THandler, depth = 0) {

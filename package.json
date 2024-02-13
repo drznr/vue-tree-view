@@ -27,7 +27,7 @@
   ],
   "author": "Daniel Dresner",
   "scripts": {
-    "dev": "vite && vue-tsc --noEmit",
+    "dev": "vite && vue-tsc --watch --noEmit",
     "build": "vue-tsc --noEmit && vite build",
     "lint": "eslint --ext .ts,vue --max-warnings=0 --ignore-path .gitignore .",
     "test": "vitest --coverage",

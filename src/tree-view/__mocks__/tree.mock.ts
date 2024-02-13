@@ -1,4 +1,4 @@
-import { INode } from '../types';
+import type { INode } from '../types';
 
 export const MOCK_TREE: INode = {
   id: '1',

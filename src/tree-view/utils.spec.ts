@@ -10,7 +10,7 @@ import {
 
 describe('Tree View Utils', () => {
   describe('traverse()', () => {
-    const handlerSpy = vitest.fn();
+    const handlerSpy = vi.fn();
 
     it('should run given handler for all tree nodes', () => {
       traverse(MOCK_TREE, handlerSpy);
@@ -23,28 +23,28 @@ describe('Tree View Utils', () => {
 
   describe('debounce()', () => {
     beforeEach(() => {
-      vitest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      vitest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should debounce function calls', () => {
-      const callback = vitest.fn();
+      const callback = vi.fn();
       const debounced = debounce(callback, 500);
 
       debounced();
       expect(callback).not.toHaveBeenCalled();
 
-      vitest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
       debounced();
       expect(callback).not.toHaveBeenCalled();
 
-      vitest.advanceTimersByTime(499);
+      vi.advanceTimersByTime(499);
       expect(callback).not.toHaveBeenCalled();
 
-      vitest.advanceTimersByTime(1);
+      vi.advanceTimersByTime(1);
       expect(callback).toHaveBeenCalledTimes(1);
     });
   });

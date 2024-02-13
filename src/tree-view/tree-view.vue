@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ConditionFn, INode } from './types';
+import type { ConditionFn, INode } from './types';
 import treeNode from './components/tree-node.vue';
 import { debounce, traverse, getAllNodesValuesUnique, filterNodes } from './utils';
 
