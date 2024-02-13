@@ -10,9 +10,11 @@ defineSlots<{
 const props = withDefaults(
   defineProps<{
     node: INode;
-    indentPx: number;
     expandedNodes: Set<string>;
     selectedNodes: Set<string>;
+    indentPx: number;
+    transitionMs: number;
+    noTransition?: boolean;
     rootElement?: keyof HTMLElementTagNameMap;
   }>(),
   {
@@ -39,27 +41,48 @@ const isChildSelected = computed(
       :indeterminate="isChildSelected"
     />
 
-    <template v-if="node.children?.length && isExpanded">
-      <ul :style="{ marginInlineStart: indentPx + 'px' }">
-        <tree-node
-          v-for="childNode in node.children"
-          :key="childNode.id"
-          :node="childNode"
-          :expanded-nodes="expandedNodes"
-          :selected-nodes="selectedNodes"
-          :indent-px="indentPx"
-        >
-          <template #node-content="scope">
-            <slot
-              name="node-content"
-              :node="scope.node"
-              :expanded="scope.expanded"
-              :selected="scope.selected"
-              :indeterminate="scope.indeterminate"
-            />
-          </template>
-        </tree-node>
-      </ul>
-    </template>
+    <Transition :name="noTransition ? '' : 'slide-fade'">
+      <template v-if="node.children?.length && isExpanded">
+        <ul :style="{ marginInlineStart: indentPx + 'px' }">
+          <tree-node
+            v-for="childNode in node.children"
+            :key="childNode.id"
+            :node="childNode"
+            :expanded-nodes="expandedNodes"
+            :selected-nodes="selectedNodes"
+            :indent-px="indentPx"
+            :transition-ms="transitionMs"
+            :no-transition="noTransition"
+          >
+            <template #node-content="scope">
+              <slot
+                name="node-content"
+                :node="scope.node"
+                :expanded="scope.expanded"
+                :selected="scope.selected"
+                :indeterminate="scope.indeterminate"
+              />
+            </template>
+          </tree-node>
+        </ul>
+      </template>
+    </Transition>
   </component>
 </template>
+
+<style scoped>
+/** Expand Transition **/
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition:
+    transform v-bind(transitionMs + 'ms') cubic-bezier(0.25, 0.8, 0.5, 1),
+    opacity v-bind(transitionMs + 'ms') cubic-bezier(0.25, 0.8, 0.5, 1);
+  transform-origin: top;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: scaleY(0);
+  opacity: 0;
+}
+</style>

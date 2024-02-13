@@ -43,11 +43,14 @@ const props = withDefaults(
     nodes: INode | INode[];
     modelValue?: string[];
     debounceMs?: number;
+    transitionMs?: number;
+    noTransition?: boolean;
     defaultExpandAll?: boolean;
     indentPx?: number;
   }>(),
   {
     debounceMs: 300,
+    transitionMs: 300,
     indentPx: 24,
     modelValue: () => [],
   }
@@ -170,6 +173,8 @@ function resetFilter() {
       :expanded-nodes="expandedNodes"
       :selected-nodes="selectedNodes"
       :indent-px="indentPx"
+      :transition-ms="transitionMs"
+      :no-transition="noTransition"
     >
       <template #node-content="scope">
         <slot
@@ -187,6 +192,7 @@ function resetFilter() {
 </template>
 
 <style scoped>
+/** Base **/
 *,
 *::before,
 *::after,
@@ -194,6 +200,7 @@ function resetFilter() {
   box-sizing: border-box;
 }
 
+/** Reset **/
 ul,
 :deep(ul) {
   list-style: none;
