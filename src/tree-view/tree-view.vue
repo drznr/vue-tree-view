@@ -151,6 +151,9 @@ function resetFilter() {
   nodesModel.value = nodesCopy;
   collapseAll();
 }
+
+const debouncedSearch = debounce(search, props.debounceMs);
+const debounceFitler = debounce(filter, props.debounceMs);
 </script>
 
 <template>
@@ -160,8 +163,8 @@ function resetFilter() {
     :collapse-all="collapseAll"
     :select-all="selectAll"
     :unselect-all="unselectAll"
-    :search="debounce(search, debounceMs)"
-    :filter="debounce(filter, debounceMs)"
+    :search="debouncedSearch"
+    :filter="debounceFitler"
     :reset-filter="resetFilter"
     :expand-to-selection="expandToSelection"
   />
