@@ -2,7 +2,6 @@ import { mount, type ComponentMountingOptions } from '@vue/test-utils';
 import treeView from './tree-view.vue';
 import { MOCK_TREE } from './__mocks__/tree.mock';
 import { type TestWrapper } from '../../vitest.setup';
-import { type INode } from './types';
 import { TREE_NODE_TEST_ID } from './components/tree-node.vue';
 
 describe('<tree-view />', () => {
@@ -93,18 +92,18 @@ describe('<tree-view />', () => {
       expect(wrapper.findByText('OPEN')).toBeNull();
     });
 
-    it('should expand to matching nodes by given search fn', async () => {
+    it('should expand to matching nodes by given search fn | search()', async () => {
       const wrapper = mountComponent();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      wrapper.vm.search((node: INode) => !!node.name?.includes('lizard'));
+      wrapper.vm.search(node => !!node.name?.includes('lizard'));
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
     });
 
-    it('should expand to selected nodes', async () => {
+    it('should expand to selected nodes | expandToSelection()', async () => {
       const wrapper = mountComponent({
         props: {
           nodes: MOCK_TREE,
@@ -289,6 +288,35 @@ describe('<tree-view />', () => {
       // unselected all
       expect(wrapper.props('modelValue')).toEqual([]);
       expect(wrapper.get('.Animals').text()).toBe('');
+    });
+  });
+
+  describe('Filtering', () => {
+    it('should filter nodes by given condition fn | filter()', async () => {
+      const wrapper = mountComponent();
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+      wrapper.vm.filter(node => node.name === 'Baboon');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
+    });
+
+    it('should return to initial state on demand | resetFilter()', async () => {
+      const wrapper = mountComponent();
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+      wrapper.vm.filter(node => node.name === 'Baboon');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
+
+      wrapper.vm.resetFilter();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
     });
   });
 });

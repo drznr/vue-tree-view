@@ -26,20 +26,6 @@ defineSlots<{
   }): unknown;
 }>();
 
-defineExpose({
-  expandAll,
-  collapseAll,
-  search,
-  toggleExpand,
-  expandToSelection,
-  filter,
-  resetFilter,
-  selectAll,
-  unselectAll,
-});
-
-const emit = defineEmits(['update:modelValue']);
-
 const props = withDefaults(
   defineProps<{
     nodes: INode | INode[];
@@ -57,6 +43,20 @@ const props = withDefaults(
     modelValue: () => [],
   }
 );
+
+defineExpose({
+  expandAll,
+  collapseAll,
+  search,
+  toggleExpand,
+  expandToSelection,
+  filter,
+  resetFilter,
+  selectAll,
+  unselectAll,
+});
+
+const emit = defineEmits(['update:modelValue']);
 
 const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
