@@ -75,6 +75,12 @@ describe('Tree View Utils', () => {
         ])
       );
     });
+
+    it('should collect all node ids after condition fn filtering to a set', () => {
+      expect(getAllNodesValuesUnique(MOCK_TREE, node => !node.children)).toEqual(
+        new Set(['10001', '10002', '10003', '10004', '10005', '10006', '10007', '10008', '10009', '10010', '10011'])
+      );
+    });
   });
 
   describe('traverseAndCheck()', () => {

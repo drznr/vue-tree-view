@@ -34,6 +34,8 @@ defineExpose({
   expandToSelection,
   filter,
   resetFilter,
+  selectAll,
+  unselectAll,
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -61,7 +63,9 @@ const nodesCopy = Array.isArray(clone) ? clone : [clone];
 const nodesModel = ref(nodesCopy);
 
 const expandedNodes = ref(
-  props.defaultExpandAll ? getAllNodesValuesUnique<string>(nodesModel.value) : new Set<string>()
+  props.defaultExpandAll
+    ? getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length)
+    : new Set<string>()
 );
 const selectedNodes = ref(new Set<string>(props.modelValue));
 
@@ -73,7 +77,7 @@ function toggleExpand(node: INode) {
 }
 
 function expandAll() {
-  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value);
+  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length);
   expandedNodes.value = allNodeIds;
 }
 
@@ -112,7 +116,7 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
 }
 
 function selectAll() {
-  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value);
+  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !node.children?.length);
 
   selectedNodes.value = allNodeIds;
   emit('update:modelValue', Array.from(allNodeIds));

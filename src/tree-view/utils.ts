@@ -56,13 +56,14 @@ export function debounce<A extends unknown[], R>(fn: (...args: A) => R, ms: numb
 
 export function getAllNodesValuesUnique<T extends INode[keyof INode]>(
   rootNode: INode | INode[],
+  conditionFn: ConditionFn = () => true,
   prop: keyof INode = 'id'
 ) {
   const set: Set<T> = new Set();
   const nodes = Array.isArray(rootNode) ? rootNode : [rootNode];
 
   nodes.forEach(node => {
-    traverse(node, (currentNode: INode) => set.add(currentNode[prop] as T));
+    traverse(node, (currentNode: INode) => conditionFn(currentNode) && set.add(currentNode[prop] as T));
   });
 
   return set;

@@ -39,7 +39,7 @@ describe('<tree-view />', () => {
       expect(nodes).toHaveLength(ALL_NODS_COUNT);
     });
 
-    it('should collapse all tree on demand | collapseAll()', async () => {
+    it('should collapse all nodes on demand | collapseAll()', async () => {
       const wrapper = mountComponent({
         props: {
           nodes: MOCK_TREE,
@@ -66,7 +66,7 @@ describe('<tree-view />', () => {
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
     });
 
-    it('should allow manual expanding of nodes', async () => {
+    it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
       const wrapper = mountComponent({
         slots: {
           controls: '',
@@ -116,6 +116,179 @@ describe('<tree-view />', () => {
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
+    });
+  });
+
+  describe('Selecting', () => {
+    const ALL_LEAFS_IDS = [
+      '10001',
+      '10002',
+      '10003',
+      '10004',
+      '10005',
+      '10006',
+      '10007',
+      '10008',
+      '10009',
+      '10010',
+      '10011',
+    ];
+
+    it('should allow recursive selection of nodes | toggleSelection()', async () => {
+      const wrapper = mountComponent({
+        props: {
+          nodes: [MOCK_TREE],
+          modelValue: [],
+          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+        },
+        slots: {
+          controls: '',
+          'node-content': `
+            <template #node-content="{ toggleSelection }">
+              <input type="checkbox" @change="ev => toggleSelection(!ev.target.checked)" />
+            </template>
+          `,
+        },
+      });
+
+      expect(wrapper.props('modelValue')).toEqual([]);
+
+      const checkbox = wrapper.find<HTMLInputElement>('input[type="checkbox"]');
+      checkbox.element.checked = false;
+      checkbox.trigger('click');
+      checkbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.props('modelValue')).toEqual(ALL_LEAFS_IDS);
+
+      checkbox.element.checked = true;
+      checkbox.trigger('click');
+      checkbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.props('modelValue')).toEqual([]);
+    });
+
+    it('should allow selection of single nodes | toggleSelection()', async () => {
+      const wrapper = mountComponent({
+        props: {
+          nodes: [MOCK_TREE],
+          defaultExpandAll: true,
+          modelValue: [],
+          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+        },
+        slots: {
+          controls: '',
+          'node-content': `
+            <template #node-content="{ node, toggleSelection }">
+              <input type="checkbox" :class="node.name" @change="ev => toggleSelection(!ev.target.checked)" />
+            </template>
+          `,
+        },
+      });
+
+      const checkbox = wrapper.find<HTMLInputElement>('.Leopard');
+
+      checkbox.element.checked = false;
+      checkbox.trigger('click');
+      checkbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.props('modelValue')).toEqual(['10002']);
+
+      checkbox.element.checked = true;
+      checkbox.trigger('click');
+      checkbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.props('modelValue')).toEqual([]);
+    });
+
+    it('should select all nodes on demand | selectAll()', async () => {
+      const wrapper = mountComponent({
+        props: {
+          nodes: [MOCK_TREE],
+          modelValue: [],
+          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+        },
+      });
+
+      wrapper.vm.selectAll();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.props('modelValue')).toEqual(ALL_LEAFS_IDS);
+    });
+
+    it('should unselect all nodes on demand | unselectAll()', async () => {
+      const wrapper = mountComponent({
+        props: {
+          nodes: [MOCK_TREE],
+          modelValue: ALL_LEAFS_IDS,
+          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+        },
+      });
+
+      wrapper.vm.unselectAll();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.props('modelValue')).toEqual([]);
+    });
+
+    it('should supply correct indications if selected / childs selected', async () => {
+      const wrapper = mountComponent({
+        props: {
+          nodes: [MOCK_TREE],
+          modelValue: [],
+          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+        },
+        slots: {
+          controls: '',
+          'node-content': `
+            <template #node-content="{ toggleSelection, selected, indeterminate }">
+              <input type="checkbox" :class="'box_' + node.name" @change="ev => toggleSelection(!ev.target.checked)" />
+              <span :class="node.name">
+                {{ selected ? 'SELECTED' : '' }}
+                {{ indeterminate ? 'INDETERMINATE' : '' }}
+              </span>
+            </template>
+          `,
+        },
+      });
+
+      expect(wrapper.props('modelValue')).toEqual([]);
+
+      const rootCheckbox = wrapper.find<HTMLInputElement>('.box_Animals');
+      rootCheckbox.element.checked = false;
+      rootCheckbox.trigger('click');
+      rootCheckbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      // root selected as all siblings selected
+      expect(wrapper.props('modelValue')).toEqual(ALL_LEAFS_IDS);
+      expect(wrapper.get('.Animals').text()).toBe('SELECTED');
+
+      wrapper.vm.expandAll();
+      await wrapper.vm.$nextTick();
+
+      const leafCheckbox = wrapper.find<HTMLInputElement>('.box_Leopard');
+      leafCheckbox.element.checked = true;
+      leafCheckbox.trigger('click');
+      leafCheckbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      // leaf is unselected and root is indeterminate
+      expect(wrapper.props('modelValue')).toEqual(ALL_LEAFS_IDS.filter(id => id !== '10002'));
+      expect(wrapper.get('.Leopard').text()).toBe('');
+      expect(wrapper.get('.Animals').text()).toBe('INDETERMINATE');
+
+      rootCheckbox.element.checked = true;
+      rootCheckbox.trigger('click');
+      rootCheckbox.trigger('change');
+      await wrapper.vm.$nextTick();
+
+      // unselected all
+      expect(wrapper.props('modelValue')).toEqual([]);
+      expect(wrapper.get('.Animals').text()).toBe('');
     });
   });
 });
