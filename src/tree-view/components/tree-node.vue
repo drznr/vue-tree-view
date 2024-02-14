@@ -31,8 +31,12 @@ const isChildSelected = computed(
 );
 </script>
 
+<script lang="ts">
+export const TREE_NODE_TEST_ID = 'tree-node-test-id';
+</script>
+
 <template>
-  <component :is="rootElement">
+  <component :is="rootElement" :data-testid="TREE_NODE_TEST_ID">
     <slot
       name="node-content"
       :node="node"

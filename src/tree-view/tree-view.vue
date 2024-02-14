@@ -63,7 +63,7 @@ const nodesModel = ref(nodesCopy);
 const expandedNodes = ref(
   props.defaultExpandAll ? getAllNodesValuesUnique<string>(nodesModel.value) : new Set<string>()
 );
-const selectedNodes = ref(new Set<string>());
+const selectedNodes = ref(new Set<string>(props.modelValue));
 
 function toggleExpand(node: INode) {
   if (!node.children?.length) return;
