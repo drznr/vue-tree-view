@@ -16,6 +16,8 @@ describe('<tree-view />', () => {
   };
 
   describe('expanding', () => {
+    const ALL_NODS_COUNT = 19;
+
     it('should render root level by default', () => {
       const wrapper = mountComponent();
 
@@ -34,11 +36,27 @@ describe('<tree-view />', () => {
 
       const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
-      expect(nodes).toHaveLength(19);
+      expect(nodes).toHaveLength(ALL_NODS_COUNT);
       expect(wrapper.findByText('Chinese softshell turtle')).toBeTruthy();
     });
 
-    it('should allow expanding all nodes | expandAll', async () => {
+    it('should collapse all tree on demand | collapseAll()', async () => {
+      const wrapper = mountComponent({
+        props: {
+          nodes: MOCK_TREE,
+          defaultExpandAll: true,
+        },
+      });
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+
+      wrapper.vm.collapseAll();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+    });
+
+    it('should allow expanding all nodes | expandAll()', async () => {
       const wrapper = mountComponent();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
@@ -46,7 +64,7 @@ describe('<tree-view />', () => {
       wrapper.vm.expandAll();
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(19);
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
     });
 
     it('should allow manual expanding of nodes', async () => {
