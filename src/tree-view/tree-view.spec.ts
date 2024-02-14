@@ -15,7 +15,7 @@ describe('<tree-view />', () => {
     }) as unknown as TestWrapper<typeof treeView>;
   };
 
-  describe('expanding', () => {
+  describe('Expanding', () => {
     const ALL_NODS_COUNT = 19;
 
     it('should render root level by default', () => {
@@ -37,7 +37,6 @@ describe('<tree-view />', () => {
       const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
       expect(nodes).toHaveLength(ALL_NODS_COUNT);
-      expect(wrapper.findByText('Chinese softshell turtle')).toBeTruthy();
     });
 
     it('should collapse all tree on demand | collapseAll()', async () => {
@@ -73,7 +72,9 @@ describe('<tree-view />', () => {
           controls: '',
           'node-content': `
             <template #node-content="scope">
-              <div @click="scope.toggleExpand" class="slotted-el" />
+              <div @click="scope.toggleExpand" class="slotted-el">
+                {{ scope.expanded && 'OPEN' }}
+              </div>
             </template>
           `,
         },
@@ -84,10 +85,12 @@ describe('<tree-view />', () => {
       // open root node
       await wrapper.find('.slotted-el').trigger('click');
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(3);
+      expect(wrapper.findByText('OPEN')?.isVisible()).toBe(true);
 
       // close root node
       await wrapper.find('.slotted-el').trigger('click');
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+      expect(wrapper.findByText('OPEN')).toBeNull();
     });
 
     it('should expand to matching nodes by given search fn', async () => {

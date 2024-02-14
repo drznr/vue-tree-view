@@ -1,12 +1,12 @@
-import { config, type VueWrapper, createWrapperError, DOMWrapper } from '@vue/test-utils';
+import { config, type VueWrapper, DOMWrapper } from '@vue/test-utils';
 import type { VueNode } from '@vue/test-utils/dist/types';
 
 export type TestWrapper<T = VueNode> = VueWrapper<T> & ReturnType<typeof customBehaviors>;
 
 const customBehaviors = (wrapper: VueWrapper) => ({
-  findByText(text: string, selector = '*'): DOMWrapper<Element> {
+  findByText(text: string, selector = '*'): DOMWrapper<Element> | null {
     const elements = wrapper.findAll(selector);
-    return elements.find(el => el.text().trim() === text.trim()) ?? createWrapperError('DOMWrapper');
+    return elements.find(el => el.text().trim() === text.trim()) ?? null;
   },
   findAllByText(text: string, selector = '*') {
     return wrapper.findAll(selector).filter(el => el.text().trim() === text.trim());
