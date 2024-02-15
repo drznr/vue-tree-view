@@ -29,7 +29,12 @@ export default defineConfig({
     setupFiles: resolve(__dirname, 'vitest.setup.ts'),
     coverage: {
       provider: 'v8',
-      exclude: [...(configDefaults.coverage.exclude as string[]), '**/__mocks__/**', '**/types.ts/**'],
+      exclude: [
+        ...(configDefaults.coverage.exclude as string[]),
+        '**/__mocks__/**',
+        '**/types.ts/**',
+        '**/*.stories.*/**',
+      ],
     },
   },
   plugins: [
