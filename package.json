@@ -29,7 +29,7 @@
   "scripts": {
     "dev": "vite && vue-tsc --watch --noEmit",
     "build": "vue-tsc --noEmit && vite build",
-    "lint": "eslint --ext .ts,vue --max-warnings=0 --no-warn-ignored --ignore-path .gitignore .",
+    "lint": "eslint --ext .ts,vue --max-warnings=0 --ignore-path .gitignore .",
     "test": "vitest --coverage",
     "preview": "vite preview",
     "prepare": "husky install",
