@@ -5,6 +5,7 @@ import { MOCK_TREE } from './__mocks__/tree.mock';
 export default {
   title: 'Tree View',
   component: TreeView,
+  tags: ['autodocs'],
 } satisfies Meta;
 
 type Story = StoryObj<typeof TreeView>;

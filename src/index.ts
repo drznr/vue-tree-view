@@ -1,3 +1,3 @@
-import treeView from './tree-view/tree-view.vue';
+import treeView from './tree-view.vue';
 
 export { treeView };

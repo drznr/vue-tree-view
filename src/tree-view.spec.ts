@@ -1,7 +1,7 @@
 import { mount, type ComponentMountingOptions } from '@vue/test-utils';
 import treeView from './tree-view.vue';
 import { MOCK_TREE } from './__mocks__/tree.mock';
-import { type TestWrapper } from '../../vitest.setup';
+import { type TestWrapper } from '../vitest.setup';
 import { TREE_NODE_TEST_ID } from './components/tree-node.vue';
 
 describe('<tree-view />', () => {
