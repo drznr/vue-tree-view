@@ -32,5 +32,10 @@ export default defineConfig({
       exclude: [...(configDefaults.coverage.exclude as string[]), '**/__mocks__/**', '**/types.ts/**'],
     },
   },
-  plugins: [vue(), eslint(), checker({ vueTsc: true }), dts()],
+  plugins: [
+    vue(),
+    eslint({ exclude: ['/virtual:/**', '**/node_modules/**', '/sb-preview/'] }),
+    checker({ vueTsc: true }),
+    dts(),
+  ],
 });

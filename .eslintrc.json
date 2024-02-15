@@ -9,7 +9,12 @@
     "parser": "@typescript-eslint/parser",
     "ecmaVersion": 2021
   },
-  "extends": ["eslint:recommended", "plugin:vue/vue3-recommended", "@vue/typescript/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "@vue/typescript/recommended",
+    "plugin:storybook/recommended"
+  ],
   "rules": {
     "vue/no-unused-vars": "error",
     "vue/max-attributes-per-line": "off",
