@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import TreeView from './tree-view.vue';
-import { MOCK_TREE } from './__mocks__/tree.mock';
+import { MOCK_TREE as ANIMALS } from './__mocks__/tree.mock';
+import ATC_TREE from './assets/atc.json';
 
 export default {
   title: 'Tree View',
@@ -10,7 +11,7 @@ export default {
 
 type Story = StoryObj<typeof TreeView>;
 
-export const Default: Story = {
+const BaseTemplate: Story = {
   render: args => ({
     components: { TreeView },
     setup() {
@@ -83,7 +84,18 @@ export const Default: Story = {
         </tree-view>
     `,
   }),
+};
+
+export const Animals: Story = {
+  ...BaseTemplate,
   args: {
-    nodes: MOCK_TREE,
+    nodes: ANIMALS,
+  },
+};
+
+export const ATC: Story = {
+  ...BaseTemplate,
+  args: {
+    nodes: ATC_TREE,
   },
 };
