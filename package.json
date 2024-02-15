@@ -34,7 +34,8 @@
     "prepare": "husky install",
     "format": "prettier --write",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "tailwind": "npx tailwindcss -i ./src/tailwind.css -o ./src/output.css --watch"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
@@ -65,6 +66,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "storybook": "7.6.15",
+    "tailwindcss": "3.4.1",
     "vite": "5.1.1",
     "vite-plugin-checker": "0.6.4",
     "vite-plugin-dts": "3.7.2",
