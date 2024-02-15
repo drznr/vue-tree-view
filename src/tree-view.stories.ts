@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import TreeView from './tree-view.vue';
 import { MOCK_TREE as ANIMALS } from './__mocks__/tree.mock';
 import ATC_TREE from './assets/atc.json';
+import { ref } from 'vue';
 
 export default {
   title: 'Tree View',
@@ -16,10 +17,17 @@ const BaseTemplate: Story = {
     components: { TreeView },
     setup() {
       global.structuredClone = (value: unknown) => JSON.parse(JSON.stringify(value));
-      return { args };
+
+      const model = ref<string[]>([]);
+      const updateModel = (event: string[]) => {
+        model.value = event;
+        args['onUpdate:modelValue']?.(event);
+      };
+
+      return { args, model, updateModel };
     },
     template: `
-        <tree-view v-bind="args">
+        <tree-view v-bind="args" :modelValue="model" @update:modelValue="updateModel">
             <template #controls="{ collapseAll, expandAll, search, expandToSelection, selectAll, unselectAll, filter, resetFilter }">
                 <button style="margin-inline-end: 8px;" @click="expandAll">Expand All</button>
                 <button style="margin-inline-end: 8px;" @click="collapseAll">Collapse All</button>
@@ -42,18 +50,22 @@ const BaseTemplate: Story = {
                     />
                 </span>
 
-                <input
-                    type="text"
-                    placeholder="Filter"
-                    @input="
-                    ev => {
-                        const { value } = ev.target;
-                        if (!value) return resetFilter();
+                <span style="margin-inline-end: 8px;">
+                    <input
+                        type="text"
+                        placeholder="Filter"
+                        @input="
+                            ev => {
+                                const { value } = ev.target;
+                                if (!value) return resetFilter();
 
-                        filter(node => !!node.name?.toLowerCase().includes(value.toLowerCase()));
-                    }
-                    "
-                />
+                                filter(node => !!node.name?.toLowerCase().includes(value.toLowerCase()));
+                            }
+                        "
+                    />
+                </span>
+
+                <span>{{ model.length }} Selected</span>
             </template>
 
             <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection }">
