@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import TreeView from './tree-view.vue';
-import { ANIMALS } from './__mocks__/animals';
+import { ANIMALS_TREE } from './__mocks__/animals';
 import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
 
@@ -105,7 +105,7 @@ const BaseTemplate: Story = {
 export const Animals: Story = {
   ...BaseTemplate,
   args: {
-    nodes: ANIMALS,
+    nodes: ANIMALS_TREE,
   },
 };
 

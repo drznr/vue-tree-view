@@ -1,6 +1,6 @@
 import { mount, type ComponentMountingOptions } from '@vue/test-utils';
 import treeView from './tree-view.vue';
-import { MOCK_TREE } from './__mocks__/tree.mock';
+import { ANIMALS_TREE } from './__mocks__/animals';
 import { type TestWrapper } from '../vitest.setup';
 import { TREE_NODE_TEST_ID } from './components/tree-node.vue';
 
@@ -8,7 +8,7 @@ describe('<tree-view />', () => {
   const mountComponent = (options?: ComponentMountingOptions<typeof treeView>) => {
     return mount(treeView, {
       props: {
-        nodes: MOCK_TREE,
+        nodes: ANIMALS_TREE,
       },
       ...options,
     }) as unknown as TestWrapper<typeof treeView>;
@@ -28,7 +28,7 @@ describe('<tree-view />', () => {
     it('should render all nodes if specified | defaultExpandAll prop', () => {
       const wrapper = mountComponent({
         props: {
-          nodes: MOCK_TREE,
+          nodes: ANIMALS_TREE,
           defaultExpandAll: true,
         },
       });
@@ -41,7 +41,7 @@ describe('<tree-view />', () => {
     it('should collapse all nodes on demand | collapseAll()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: MOCK_TREE,
+          nodes: ANIMALS_TREE,
           defaultExpandAll: true,
         },
       });
@@ -106,7 +106,7 @@ describe('<tree-view />', () => {
     it('should expand to selected nodes | expandToSelection()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: MOCK_TREE,
+          nodes: ANIMALS_TREE,
           modelValue: ['10006', '10007'],
         },
       });
@@ -136,7 +136,7 @@ describe('<tree-view />', () => {
     it('should allow recursive selection of nodes | toggleSelection()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: [MOCK_TREE],
+          nodes: [ANIMALS_TREE],
           modelValue: [],
           'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
         },
@@ -171,7 +171,7 @@ describe('<tree-view />', () => {
     it('should allow selection of single nodes | toggleSelection()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: [MOCK_TREE],
+          nodes: [ANIMALS_TREE],
           defaultExpandAll: true,
           modelValue: [],
           'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
@@ -206,7 +206,7 @@ describe('<tree-view />', () => {
     it('should select all nodes on demand | selectAll()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: [MOCK_TREE],
+          nodes: [ANIMALS_TREE],
           modelValue: [],
           'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
         },
@@ -221,7 +221,7 @@ describe('<tree-view />', () => {
     it('should unselect all nodes on demand | unselectAll()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: [MOCK_TREE],
+          nodes: [ANIMALS_TREE],
           modelValue: ALL_LEAFS_IDS,
           'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
         },
@@ -236,7 +236,7 @@ describe('<tree-view />', () => {
     it('should supply correct indications if selected / childs selected', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: [MOCK_TREE],
+          nodes: [ANIMALS_TREE],
           modelValue: [],
           'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
         },
