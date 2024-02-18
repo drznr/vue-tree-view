@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import TreeView from './tree-view.vue';
-import { MOCK_TREE as ANIMALS } from './__mocks__/tree.mock';
-import ATC_TREE from './assets/atc.json';
+import { ANIMALS } from './__mocks__/animals';
+import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
 
 export default {
