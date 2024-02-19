@@ -59,7 +59,7 @@ defineExpose({
   unselectAll,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{ 'update:modelValue': [payload: string[]]; 'on-error': [error: Error] }>();
 
 const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
@@ -181,6 +181,8 @@ async function appendChildrenToNode(node: INode) {
         if (currentNode.id === node.id) currentNode.children = fetchedChildren;
       });
     });
+  } catch (err) {
+    emit('on-error', new Error(`Faild to fetch children for node: [${node.id}]`, { cause: err }));
   } finally {
     nodeIdIsFetchingMap.value.set(node.id, false);
   }
