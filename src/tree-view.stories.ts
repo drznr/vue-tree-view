@@ -75,7 +75,7 @@ const BaseTemplate: Story = {
                 <span class="font-sans" :title="model.join(', ')">{{ model.length }} Selected</span>
             </template>
 
-            <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection, fetching }">
+            <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection, fetching, error }">
                 <div class="flex flex-row items-center my-2" @click="toggleExpand">
                 <svg v-if="fetching" width="16px" height="16px" viewBox="0 0 32 32">
                     <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
@@ -103,11 +103,13 @@ const BaseTemplate: Story = {
                     />
                 </span>
 
-                <span class="me-6 font-bold">
+                <span class="font-bold">
                     {{ node.id }}
                 </span>
 
-                <span v-if="node.name">{{ node.name }}</span>
+                <span v-if="node.name" class="ms-6">{{ node.name }}</span>
+
+                <span v-if="error" class="ms-6">someting went wrong!</span>
                 </div>
             </template>
         </tree-view>

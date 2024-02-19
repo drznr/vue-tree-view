@@ -22,6 +22,7 @@ defineSlots<{
     selected: boolean;
     indeterminate: boolean;
     fetching: boolean;
+    error: boolean;
     toggleExpand: VoidFunction;
     toggleSelection: (isUnselect: boolean) => void;
   }): unknown;
@@ -72,7 +73,7 @@ const expandedNodes = ref(
 );
 const selectedNodes = ref(new Set<string>(props.modelValue));
 
-const nodeIdIsFetchingMap = ref(new Map<string, boolean>());
+const nodeIdIsHttpStateMap = ref(new Map<string, { fetching: boolean; error?: Error }>());
 
 function toggleExpand(node: INode) {
   if (!node.children?.length) return;
@@ -162,14 +163,14 @@ function resetFilter() {
 }
 
 function onChildNodeCreated(node: INode) {
-  if (props.fetchChildren && !node.children?.length && !nodeIdIsFetchingMap.value.has(node.id)) {
+  if (props.fetchChildren && !node.children?.length && !nodeIdIsHttpStateMap.value.has(node.id)) {
     appendChildrenToNode(node);
   }
 }
 
 async function appendChildrenToNode(node: INode) {
   try {
-    nodeIdIsFetchingMap.value.set(node.id, true);
+    nodeIdIsHttpStateMap.value.set(node.id, { fetching: true });
     const fetchedChildren = await props.fetchChildren?.(node.id);
 
     if (!fetchedChildren?.length) {
@@ -181,10 +182,12 @@ async function appendChildrenToNode(node: INode) {
         if (currentNode.id === node.id) currentNode.children = fetchedChildren;
       });
     });
-  } catch (err) {
-    emit('on-error', new Error(`Faild to fetch children for node: [${node.id}]`, { cause: err }));
-  } finally {
-    nodeIdIsFetchingMap.value.set(node.id, false);
+
+    nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
+  } catch (originalError) {
+    const error = new Error(`Faild to fetch children for node: [${node.id}]`, { cause: originalError });
+    emit('on-error', error);
+    nodeIdIsHttpStateMap.value.set(node.id, { fetching: false, error });
   }
 }
 
@@ -223,7 +226,8 @@ const debounceFitler = debounce(filter, props.debounceMs);
           :expanded="scope.expanded"
           :selected="scope.selected"
           :indeterminate="scope.indeterminate"
-          :fetching="!!nodeIdIsFetchingMap.get(scope.node.id)"
+          :fetching="!!nodeIdIsHttpStateMap.get(scope.node.id)?.fetching"
+          :error="!!nodeIdIsHttpStateMap.get(scope.node.id)?.error"
           :toggle-expand="() => toggleExpand(scope.node)"
           :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
         />
