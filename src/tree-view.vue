@@ -4,11 +4,13 @@ import type { ConditionFn, INode } from './types';
 import treeNode from './components/tree-node.vue';
 import { debounce, traverse, getAllNodesValuesUnique, filterNodes, traverseAsync } from './utils';
 
+type AsyncVoidFunction = () => Promise<void>;
+
 defineSlots<{
   controls(props: {
-    expandAll: VoidFunction;
+    expandAll: AsyncVoidFunction;
     collapseAll: VoidFunction;
-    selectAll: VoidFunction;
+    selectAll: AsyncVoidFunction;
     unselectAll: VoidFunction;
     expandToSelection: VoidFunction;
     resetFilter: VoidFunction;
