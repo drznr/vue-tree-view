@@ -65,14 +65,14 @@ const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
 const nodesModel = ref(nodesCopy);
 
-const nodeIdIsFetchingMap = ref(new Map<string, boolean>());
-
 const expandedNodes = ref(
   props.defaultExpandAll
     ? getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length)
     : new Set<string>()
 );
 const selectedNodes = ref(new Set<string>(props.modelValue));
+
+const nodeIdIsFetchingMap = ref(new Map<string, boolean>());
 
 function toggleExpand(node: INode) {
   if (!node.children?.length) return;
