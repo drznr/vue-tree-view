@@ -162,7 +162,7 @@ function resetFilter() {
   collapseAll();
 }
 
-function onChildNodeCreated(node: INode) {
+function onNodeCreated(node: INode) {
   if (props.fetchChildren && !node.children?.length && !nodeIdIsHttpStateMap.value.has(node.id)) {
     appendChildrenToNode(node);
   }
@@ -217,7 +217,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :indent-px="indentPx"
       :transition-ms="transitionMs"
       :no-transition="noTransition"
-      @created="onChildNodeCreated"
+      @created="onNodeCreated"
     >
       <template #node-content="scope">
         <slot
