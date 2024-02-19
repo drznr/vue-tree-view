@@ -77,7 +77,7 @@ const BaseTemplate: Story = {
 
             <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection, fetching, error }">
                 <div class="flex flex-row items-center my-2" @click="toggleExpand">
-                <svg v-if="fetching" width="16px" height="16px" viewBox="0 0 32 32">
+                <svg v-if="fetching" class="me-6" width="16px" height="16px" viewBox="0 0 32 32">
                     <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
                     <g>
                         <path d="M64 128A64 64 0 0 1 18.34 19.16L21.16 22a60 60 0 1 0 52.8-17.17l.62-3.95A64 64 0 0 1 64 128z" fill="#000000"/>
