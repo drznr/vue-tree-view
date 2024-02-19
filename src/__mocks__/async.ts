@@ -13,7 +13,7 @@ export const getMockChildren = (nodeId: string): Promise<INode[] | undefined> =>
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(
-        nodeId.length > 15
+        nodeId.length > 8
           ? undefined
           : Array(3)
               .fill(null)
