@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import type { ConditionFn, INode } from './types';
 import treeNode from './components/tree-node.vue';
-import { debounce, traverse, getAllNodesValuesUnique, filterNodes } from './utils';
+import { debounce, traverse, getAllNodesValuesUnique, filterNodes, traverseAsync } from './utils';
 
 defineSlots<{
   controls(props: {
@@ -82,7 +82,10 @@ function toggleExpand(node: INode) {
   else expandedNodes.value.add(node.id);
 }
 
-function expandAll() {
+async function expandAll() {
+  if (props.fetchChildren) {
+    await Promise.all(nodesModel.value.map(node => traverseAsync(node, appendChildrenToNode)));
+  }
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length);
   expandedNodes.value = allNodeIds;
 }
@@ -108,7 +111,11 @@ function search(conditionFn: ConditionFn) {
   nodesModel.value.forEach(node => traverse(node, handler));
 }
 
-function toggleSelection(baseNode: INode, isUnselect: boolean) {
+async function toggleSelection(baseNode: INode, isUnselect: boolean) {
+  if (props.fetchChildren) {
+    await traverseAsync(baseNode, appendChildrenToNode);
+  }
+
   const handler = (node: INode) => {
     if (node.children?.length) return;
 
@@ -121,7 +128,11 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
-function selectAll() {
+async function selectAll() {
+  if (props.fetchChildren) {
+    await Promise.all(nodesModel.value.map(node => traverseAsync(node, appendChildrenToNode)));
+  }
+
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !node.children?.length);
 
   selectedNodes.value = allNodeIds;
@@ -162,31 +173,27 @@ function resetFilter() {
   collapseAll();
 }
 
-function onNodeCreated(node: INode) {
-  if (props.fetchChildren && !node.children?.length && !nodeIdIsHttpStateMap.value.has(node.id)) {
-    appendChildrenToNode(node);
-  }
-}
-
 async function appendChildrenToNode(node: INode) {
-  try {
-    nodeIdIsHttpStateMap.value.set(node.id, { fetching: true });
-    const fetchedChildren = await props.fetchChildren?.(node.id);
-    nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
+  if (props.fetchChildren && !node.children?.length && !nodeIdIsHttpStateMap.value.has(node.id)) {
+    try {
+      nodeIdIsHttpStateMap.value.set(node.id, { fetching: true });
+      const fetchedChildren = await props.fetchChildren?.(node.id);
+      nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
 
-    if (!fetchedChildren?.length) {
-      return;
-    }
+      if (!fetchedChildren?.length) {
+        return;
+      }
 
-    nodesModel.value.forEach(rootNode => {
-      traverse(rootNode, currentNode => {
-        if (currentNode.id === node.id) currentNode.children = fetchedChildren;
+      nodesModel.value.forEach(rootNode => {
+        traverse(rootNode, currentNode => {
+          if (currentNode.id === node.id) currentNode.children = fetchedChildren;
+        });
       });
-    });
-  } catch (originalError) {
-    const error = new Error(`Faild to fetch children for node: [${node.id}]`, { cause: originalError });
-    emit('on-error', error);
-    nodeIdIsHttpStateMap.value.set(node.id, { fetching: false, error });
+    } catch (originalError) {
+      const error = new Error(`Faild to fetch children for node: [${node.id}]`, { cause: originalError });
+      emit('on-error', error);
+      nodeIdIsHttpStateMap.value.set(node.id, { fetching: false, error });
+    }
   }
 }
 
@@ -216,7 +223,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :indent-px="indentPx"
       :transition-ms="transitionMs"
       :no-transition="noTransition"
-      @created="onNodeCreated"
+      @created="appendChildrenToNode"
     >
       <template #node-content="scope">
         <slot
