@@ -3,6 +3,7 @@ import TreeView from './tree-view.vue';
 import { ANIMALS_TREE } from './__mocks__/animals';
 import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
+import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
 
 export default {
   title: 'Tree View',
@@ -67,12 +68,20 @@ const BaseTemplate: Story = {
                     />
                 </span>
 
-                <span class="font-sans">{{ model.length }} Selected</span>
+                <span class="font-sans" :title="model.join(', ')">{{ model.length }} Selected</span>
             </template>
 
-            <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection }">
+            <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection, fetching }">
                 <div class="flex flex-row items-center my-2" @click="toggleExpand">
+                <svg v-if="fetching" width="16px" height="16px" viewBox="0 0 32 32">
+                    <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
+                    <g>
+                        <path d="M64 128A64 64 0 0 1 18.34 19.16L21.16 22a60 60 0 1 0 52.8-17.17l.62-3.95A64 64 0 0 1 64 128z" fill="#000000"/>
+                        <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="1800ms" repeatCount="indefinite" />
+                    </g>
+                </svg>
                 <span
+                    v-else
                     :class="{ 'rotate-90': expanded, invisible: !node.children?.length }"
                     class="me-6"
                 >
@@ -113,5 +122,13 @@ export const ATC: Story = {
   ...BaseTemplate,
   args: {
     nodes: ATC_TREE,
+  },
+};
+
+export const Async: Story = {
+  ...BaseTemplate,
+  args: {
+    nodes: ASYNC_TREE,
+    fetchChildren: getMockChildren,
   },
 };

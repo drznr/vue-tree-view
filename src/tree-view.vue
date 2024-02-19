@@ -21,6 +21,7 @@ defineSlots<{
     expanded: boolean;
     selected: boolean;
     indeterminate: boolean;
+    fetching: boolean;
     toggleExpand: VoidFunction;
     toggleSelection: (isUnselect: boolean) => void;
   }): unknown;
@@ -35,12 +36,14 @@ const props = withDefaults(
     noTransition?: boolean;
     defaultExpandAll?: boolean;
     indentPx?: number;
+    fetchChildren?: (nodeId: string) => Promise<INode[] | undefined>;
   }>(),
   {
     debounceMs: 300,
     transitionMs: 300,
     indentPx: 24,
     modelValue: () => [],
+    fetchChildren: undefined,
   }
 );
 
@@ -61,6 +64,8 @@ const emit = defineEmits(['update:modelValue']);
 const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
 const nodesModel = ref(nodesCopy);
+
+const nodeIdIsFetchingMap = ref(new Map<string, boolean>());
 
 const expandedNodes = ref(
   props.defaultExpandAll
@@ -156,6 +161,31 @@ function resetFilter() {
   collapseAll();
 }
 
+function onChildNodeCreated(node: INode) {
+  if (props.fetchChildren && !node.children?.length && !nodeIdIsFetchingMap.value.has(node.id)) {
+    appendChildrenToNode(node);
+  }
+}
+
+async function appendChildrenToNode(node: INode) {
+  try {
+    nodeIdIsFetchingMap.value.set(node.id, true);
+    const fetchedChildren = await props.fetchChildren?.(node.id);
+
+    if (!fetchedChildren?.length) {
+      return;
+    }
+
+    nodesModel.value.forEach(rootNode => {
+      traverse(rootNode, currentNode => {
+        if (currentNode.id === node.id) currentNode.children = fetchedChildren;
+      });
+    });
+  } finally {
+    nodeIdIsFetchingMap.value.set(node.id, false);
+  }
+}
+
 const debouncedSearch = debounce(search, props.debounceMs);
 const debounceFitler = debounce(filter, props.debounceMs);
 </script>
@@ -182,6 +212,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :indent-px="indentPx"
       :transition-ms="transitionMs"
       :no-transition="noTransition"
+      @created="onChildNodeCreated"
     >
       <template #node-content="scope">
         <slot
@@ -190,6 +221,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
           :expanded="scope.expanded"
           :selected="scope.selected"
           :indeterminate="scope.indeterminate"
+          :fetching="!!nodeIdIsFetchingMap.get(scope.node.id)"
           :toggle-expand="() => toggleExpand(scope.node)"
           :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
         />
