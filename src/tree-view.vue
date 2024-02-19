@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { ConditionFn, INode } from './types';
+import type { ConditionFn, INode, AsyncVoidFunction } from './types';
 import treeNode from './components/tree-node.vue';
 import { debounce, traverse, getAllNodesValuesUnique, filterNodes, traverseAsync } from './utils';
-
-type AsyncVoidFunction = () => Promise<void>;
 
 defineSlots<{
   controls(props: {
