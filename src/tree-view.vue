@@ -172,6 +172,7 @@ async function appendChildrenToNode(node: INode) {
   try {
     nodeIdIsHttpStateMap.value.set(node.id, { fetching: true });
     const fetchedChildren = await props.fetchChildren?.(node.id);
+    nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
 
     if (!fetchedChildren?.length) {
       return;
@@ -182,8 +183,6 @@ async function appendChildrenToNode(node: INode) {
         if (currentNode.id === node.id) currentNode.children = fetchedChildren;
       });
     });
-
-    nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
   } catch (originalError) {
     const error = new Error(`Faild to fetch children for node: [${node.id}]`, { cause: originalError });
     emit('on-error', error);
