@@ -565,12 +565,16 @@ video {
   margin-inline-end: 0.5rem;
 }
 
-.me-6 {
-  margin-inline-end: 1.5rem;
+.me-4 {
+  margin-inline-end: 1rem;
 }
 
 .ms-6 {
   margin-inline-start: 1.5rem;
+}
+
+.ms-4 {
+  margin-inline-start: 1rem;
 }
 
 .flex {
