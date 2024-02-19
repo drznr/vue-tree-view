@@ -18,6 +18,7 @@
     "strictNullChecks": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "strictFunctionTypes": true,
     "verbatimModuleSyntax": true,
     "lib": ["dom", "ESNext"],
     "types": ["vitest/globals"]
