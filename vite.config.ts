@@ -42,7 +42,7 @@ export default defineConfig({
   plugins: [
     vue(),
     eslint({ exclude: ['/virtual:/**', '**/node_modules/**', '/sb-preview/'] }),
-    checker({ vueTsc: true }),
+    checker({ root: resolve(__dirname), vueTsc: true }),
     dts(),
   ],
 });
