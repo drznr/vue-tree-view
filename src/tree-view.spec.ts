@@ -1,15 +1,21 @@
-import { mount, type ComponentMountingOptions } from '@vue/test-utils';
+import { mount, type ComponentMountingOptions, flushPromises } from '@vue/test-utils';
 import treeView from './tree-view.vue';
 import { ANIMALS_TREE } from './__mocks__/animals';
+import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
 import { type TestWrapper } from '../vitest.setup';
 import { TREE_NODE_TEST_ID } from './components/tree-node.vue';
 
+type MountFnOptions = ComponentMountingOptions<typeof treeView>;
+
 describe('<tree-view />', () => {
-  const mountComponent = (options?: ComponentMountingOptions<typeof treeView>) => {
+  const OPTIONS: MountFnOptions = {
+    props: {
+      nodes: ANIMALS_TREE,
+    },
+  };
+  const mountComponent = (options?: MountFnOptions) => {
     return mount(treeView, {
-      props: {
-        nodes: ANIMALS_TREE,
-      },
+      ...OPTIONS,
       ...options,
     }) as unknown as TestWrapper<typeof treeView>;
   };
@@ -28,10 +34,10 @@ describe('<tree-view />', () => {
     it('should render all nodes if specified | defaultExpandAll prop', () => {
       const wrapper = mountComponent({
         props: {
-          nodes: ANIMALS_TREE,
+          ...OPTIONS.props,
           defaultExpandAll: true,
         },
-      });
+      } as MountFnOptions);
 
       const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
@@ -41,10 +47,10 @@ describe('<tree-view />', () => {
     it('should collapse all nodes on demand | collapseAll()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: ANIMALS_TREE,
+          ...OPTIONS.props,
           defaultExpandAll: true,
         },
-      });
+      } as MountFnOptions);
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
 
@@ -106,10 +112,10 @@ describe('<tree-view />', () => {
     it('should expand to selected nodes | expandToSelection()', async () => {
       const wrapper = mountComponent({
         props: {
-          nodes: ANIMALS_TREE,
+          ...OPTIONS.props,
           modelValue: ['10006', '10007'],
         },
-      });
+      } as MountFnOptions);
 
       wrapper.vm.expandToSelection();
       await wrapper.vm.$nextTick();
@@ -317,6 +323,46 @@ describe('<tree-view />', () => {
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+    });
+  });
+
+  describe('Async | fetchChildren()', () => {
+    const ASYNC_OPTIONS: MountFnOptions = {
+      props: {
+        nodes: ASYNC_TREE,
+        fetchChildren: getMockChildren,
+      },
+    };
+    const mountComponentAsyncMode = (options: MountFnOptions = {}) => mountComponent({ ...ASYNC_OPTIONS, ...options });
+
+    describe('Filtering', () => {
+      it('should filter nodes by given condition fn | filter()', async () => {
+        const wrapper = mountComponentAsyncMode();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        await wrapper.vm.filter(node => node.id === '1.1.1.1.1');
+
+        await flushPromises();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);
+      });
+
+      it('should return to initial state on demand | resetFilter()', async () => {
+        const wrapper = mountComponentAsyncMode();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        await wrapper.vm.filter(node => node.id === '1.1.1.1.1');
+        await flushPromises();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);
+
+        wrapper.vm.resetFilter();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+      });
     });
   });
 });
