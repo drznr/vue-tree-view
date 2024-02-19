@@ -6,6 +6,7 @@ import {
   traverseAndCheck,
   traverseAndCheckAll,
   filterNodes,
+  traverseAsync,
 } from './utils';
 
 describe('Tree View Utils', () => {
@@ -14,6 +15,18 @@ describe('Tree View Utils', () => {
 
     it('should run given handler for all tree nodes', () => {
       traverse(ANIMALS_TREE, handlerSpy);
+
+      expect(handlerSpy).toHaveBeenCalledTimes(19);
+      expect(handlerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: '1' }), 0);
+      expect(handlerSpy).toHaveBeenLastCalledWith(expect.objectContaining({ id: '10011' }), 3);
+    });
+  });
+
+  describe('traverseAsync()', () => {
+    const handlerSpy = vi.fn();
+
+    it('should run given handler for all tree nodes', async () => {
+      await traverseAsync(ANIMALS_TREE, handlerSpy);
 
       expect(handlerSpy).toHaveBeenCalledTimes(19);
       expect(handlerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: '1' }), 0);
