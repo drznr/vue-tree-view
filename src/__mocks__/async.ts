@@ -13,13 +13,13 @@ export const getMockChildren = (nodeId: string): Promise<INode[] | undefined> =>
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(
-        nodeId.length > 6
+        nodeId.length > 15
           ? undefined
           : Array(3)
               .fill(null)
               .map((_, i) => ({
                 id: nodeId + '.' + i,
-                name: (Math.random() + 1).toString(36).substring(7),
+                name: nodeId.length + '-node-' + (Math.random() + 1).toString(36).substring(7),
               }))
       );
     }, 300);

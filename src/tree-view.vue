@@ -84,7 +84,7 @@ function toggleExpand(node: INode) {
 
 async function expandAll() {
   if (props.fetchChildren) {
-    await Promise.all(nodesModel.value.map(node => traverseAsync(node, appendChildrenToNode)));
+    await appendAllNodes();
   }
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length);
   expandedNodes.value = allNodeIds;
@@ -94,7 +94,10 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-function search(conditionFn: ConditionFn) {
+async function search(conditionFn: ConditionFn) {
+  if (props.fetchChildren) {
+    await appendAllNodes();
+  }
   collapseAll();
 
   const path: string[] = [];
@@ -130,7 +133,7 @@ async function toggleSelection(baseNode: INode, isUnselect: boolean) {
 
 async function selectAll() {
   if (props.fetchChildren) {
-    await Promise.all(nodesModel.value.map(node => traverseAsync(node, appendChildrenToNode)));
+    await appendAllNodes();
   }
 
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !node.children?.length);
@@ -162,7 +165,11 @@ function expandToSelection() {
   nodesModel.value.forEach(node => traverse(node, handler));
 }
 
-function filter(conditionFn: ConditionFn) {
+async function filter(conditionFn: ConditionFn) {
+  if (props.fetchChildren) {
+    await appendAllNodes();
+  }
+
   resetFilter();
   nodesModel.value = filterNodes(nodesModel.value, conditionFn);
   expandAll();
@@ -195,6 +202,10 @@ async function appendChildrenToNode(node: INode) {
       nodeIdIsHttpStateMap.value.set(node.id, { fetching: false, error });
     }
   }
+}
+
+async function appendAllNodes() {
+  await Promise.all(nodesModel.value.map(rootNode => traverseAsync(rootNode, appendChildrenToNode)));
 }
 
 const debouncedSearch = debounce(search, props.debounceMs);
