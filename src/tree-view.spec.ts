@@ -335,6 +335,122 @@ describe('<tree-view />', () => {
     };
     const mountComponentAsyncMode = (options: MountFnOptions = {}) => mountComponent({ ...ASYNC_OPTIONS, ...options });
 
+    describe('Expanding', () => {
+      const ALL_NODS_COUNT = 81;
+
+      it('should render root level by default', () => {
+        const wrapper = mountComponentAsyncMode();
+
+        const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
+
+        expect(nodes).toHaveLength(1);
+      });
+
+      it('should render all nodes if specified | defaultExpandAll prop', async () => {
+        const wrapper = mountComponentAsyncMode({
+          props: {
+            ...ASYNC_OPTIONS.props,
+            defaultExpandAll: true,
+          },
+        } as MountFnOptions);
+
+        await idle();
+
+        const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
+
+        expect(nodes).toHaveLength(ALL_NODS_COUNT);
+      });
+
+      it('should collapse all nodes on demand | collapseAll()', async () => {
+        const wrapper = mountComponentAsyncMode({
+          props: {
+            ...ASYNC_OPTIONS.props,
+            defaultExpandAll: true,
+          },
+        } as MountFnOptions);
+
+        await idle();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+
+        wrapper.vm.collapseAll();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+      });
+
+      it('should allow expanding all nodes | expandAll()', async () => {
+        const wrapper = mountComponentAsyncMode();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        await wrapper.vm.expandAll();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+      });
+
+      it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
+        const wrapper = mountComponentAsyncMode({
+          slots: {
+            controls: '',
+            'node-content': `
+              <template #node-content="scope">
+                <div @click="scope.toggleExpand" class="slotted-el">
+                  {{ scope.expanded && 'OPEN' }}
+                </div>
+              </template>
+            `,
+          },
+        });
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        // open root node
+        await wrapper.find('.slotted-el').trigger('click');
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(3);
+        expect(wrapper.findByText('OPEN')?.isVisible()).toBe(true);
+
+        // close root node
+        await wrapper.find('.slotted-el').trigger('click');
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+        expect(wrapper.findByText('OPEN')).toBeNull();
+      });
+
+      it('should expand to matching nodes by given search fn | search()', async () => {
+        const wrapper = mountComponentAsyncMode();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        await wrapper.vm.search(node => node.id === '1.1.1.1.1');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(12);
+      });
+
+      it('should expand to selected nodes | expandToSelection()', async () => {
+        const wrapper = mountComponentAsyncMode({
+          props: {
+            ...ASYNC_OPTIONS.props,
+            modelValue: ['1.1.1.1.1', '1.1.0.0.2'],
+            defaultExpandAll: true,
+          },
+        } as MountFnOptions);
+
+        await idle();
+
+        wrapper.vm.collapseAll();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        wrapper.vm.expandToSelection();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(18);
+      });
+    });
+
     describe('Filtering', () => {
       it('should filter nodes by given condition fn | filter()', async () => {
         const wrapper = mountComponentAsyncMode();
@@ -366,3 +482,8 @@ describe('<tree-view />', () => {
     });
   });
 });
+
+async function idle(timeout = 3000) {
+  // flushPromises won't wait for un suspensed operation on component mounting
+  await new Promise(resolve => window.setTimeout(resolve, timeout));
+}
