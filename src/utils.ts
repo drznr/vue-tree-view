@@ -23,12 +23,7 @@ export async function traverseAsync<T>(
   }
 }
 
-export function traverseAndCheck<T>(
-  node: T,
-  childrenKey: keyof T,
-  conditionFn: (node: T, depth: number) => boolean,
-  depth = 0
-): boolean {
+export function traverseAndCheck<T>(node: T, childrenKey: keyof T, conditionFn: ConditionFn<T>, depth = 0): boolean {
   if (conditionFn(node, depth)) {
     return true;
   }
@@ -44,12 +39,7 @@ export function traverseAndCheck<T>(
   return false;
 }
 
-export function traverseAndCheckAll<T>(
-  node: T,
-  childrenKey: keyof T,
-  conditionFn: (node: T, depth: number) => boolean,
-  depth = 0
-): boolean {
+export function traverseAndCheckAll<T>(node: T, childrenKey: keyof T, conditionFn: ConditionFn<T>, depth = 0): boolean {
   if (!conditionFn(node, depth)) {
     return false;
   }
