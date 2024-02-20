@@ -66,14 +66,12 @@ const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
 const nodesModel = ref(nodesCopy);
 
-const expandedNodes = ref(
-  props.defaultExpandAll
-    ? getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length)
-    : new Set<string>()
-);
+const expandedNodes = ref(new Set<string>());
 const selectedNodes = ref(new Set<string>(props.modelValue));
 
 const nodeIdIsHttpStateMap = ref(new Map<string, { fetching: boolean; error?: Error }>());
+
+if (props.defaultExpandAll) expandAll();
 
 function toggleExpand(node: INode) {
   if (!node.children?.length) return;
