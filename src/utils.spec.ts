@@ -7,6 +7,8 @@ import {
   traverseAndCheckAll,
   filterNodes,
   traverseAsync,
+  getNodeChildren,
+  getNodeId,
 } from './utils';
 
 describe('Tree View Utils', () => {
@@ -201,6 +203,36 @@ describe('Tree View Utils', () => {
 
     it('should return null if no nodes meet condition fn', () => {
       expect(filterNodes([ANIMALS_TREE], 'children', node => node.name === 'MISSING VALUE')).toEqual([]);
+    });
+  });
+
+  describe('getNodeChildren()', () => {
+    it('should return valid children from object', () => {
+      expect(getNodeChildren({ children: undefined }, 'children')).toBeUndefined();
+      expect(getNodeChildren({ custom: [] }, 'custom')).toEqual([]);
+      expect(getNodeChildren({ children: [1, 2, 3], other: 1 }, 'children')).toEqual([1, 2, 3]);
+    });
+
+    it('should throw an error if children are not valid', async () => {
+      await expect(async () => getNodeChildren({ children: null }, 'children')).rejects.toThrowError();
+      await expect(async () => getNodeChildren({ custom: { children: [] } }, 'custom')).rejects.toThrowError();
+      await expect(async () => getNodeChildren({ children: 2, other: [] }, 'children')).rejects.toThrowError();
+      await expect(async () => getNodeChildren({ children: '' }, 'children')).rejects.toThrowError();
+    });
+  });
+
+  describe('getNodeId()', () => {
+    it('should return valid id from object', () => {
+      expect(getNodeId({ id: '1' }, 'id')).toBe('1');
+      expect(getNodeId({ custom: '123' }, 'custom')).toBe('123');
+      expect(getNodeId({ id: '321', other: 1 }, 'id')).toBe('321');
+    });
+
+    it('should throw an error if id is not valid', async () => {
+      await expect(async () => getNodeId({ id: null }, 'id')).rejects.toThrowError();
+      await expect(async () => getNodeId({ custom: { id: [] } }, 'custom')).rejects.toThrowError();
+      await expect(async () => getNodeId({ id: 2, other: [] }, 'id')).rejects.toThrowError();
+      await expect(async () => getNodeId({ id: undefined }, 'id')).rejects.toThrowError();
     });
   });
 });

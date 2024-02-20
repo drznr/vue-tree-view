@@ -102,12 +102,22 @@ export function filterNodes<T>(nodes: T[], childrenKey: keyof T, conditionFn: Co
   return filteredNodes;
 }
 
-function getNodeChildren<T>(node: T, childrenKey: keyof T) {
+export function getNodeChildren<T>(node: T, childrenKey: keyof T) {
   const children = node[childrenKey];
 
   if (!Array.isArray(children) && children !== undefined) {
-    throw new Error(`Invalid children for node: [${JSON.stringify(node, undefined, '\t')}]`);
+    throw new Error(`Invalid children for node: ${JSON.stringify(node, undefined, '\t')}`);
   }
 
   return children as T[] | undefined;
+}
+
+export function getNodeId<T>(node: T, idKey: keyof T) {
+  const id = node[idKey];
+
+  if (typeof id !== 'string') {
+    throw new Error(`Invalid id for node: ${JSON.stringify(node, undefined, '\t')}`);
+  }
+
+  return id;
 }
