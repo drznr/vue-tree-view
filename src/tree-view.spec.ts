@@ -21,7 +21,7 @@ describe('<tree-view />', () => {
   };
 
   describe('Expanding', () => {
-    const ALL_NODS_COUNT = 19;
+    const ALL_NODES_COUNT = 19;
 
     it('should render root level by default', () => {
       const wrapper = mountComponent();
@@ -41,7 +41,7 @@ describe('<tree-view />', () => {
 
       const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
-      expect(nodes).toHaveLength(ALL_NODS_COUNT);
+      expect(nodes).toHaveLength(ALL_NODES_COUNT);
     });
 
     it('should collapse all nodes on demand | collapseAll()', async () => {
@@ -52,7 +52,7 @@ describe('<tree-view />', () => {
         },
       } as MountFnOptions);
 
-      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
 
       wrapper.vm.collapseAll();
       await wrapper.vm.$nextTick();
@@ -68,7 +68,7 @@ describe('<tree-view />', () => {
       wrapper.vm.expandAll();
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+      expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
     });
 
     it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
@@ -336,7 +336,7 @@ describe('<tree-view />', () => {
     const mountComponentAsyncMode = (options: MountFnOptions = {}) => mountComponent({ ...ASYNC_OPTIONS, ...options });
 
     describe('Expanding', () => {
-      const ALL_NODS_COUNT = 81;
+      const ALL_NODES_COUNT = 81;
 
       it('should render root level by default', () => {
         const wrapper = mountComponentAsyncMode();
@@ -358,7 +358,7 @@ describe('<tree-view />', () => {
 
         const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
-        expect(nodes).toHaveLength(ALL_NODS_COUNT);
+        expect(nodes).toHaveLength(ALL_NODES_COUNT);
       });
 
       it('should collapse all nodes on demand | collapseAll()', async () => {
@@ -371,7 +371,7 @@ describe('<tree-view />', () => {
 
         await idle();
 
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
 
         wrapper.vm.collapseAll();
         await wrapper.vm.$nextTick();
@@ -387,7 +387,7 @@ describe('<tree-view />', () => {
         await wrapper.vm.expandAll();
         await wrapper.vm.$nextTick();
 
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODS_COUNT);
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
       });
 
       it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
