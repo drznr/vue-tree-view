@@ -22,6 +22,8 @@ const props = withDefaults(
   }
 );
 
+const emit = defineEmits<(event: 'created', node: INode) => void>();
+
 const isExpanded = computed(() => props.expandedNodes.has(props.node.id));
 const isSelected = computed(() =>
   traverseAndCheckAll(props.node, node => !!node.children?.length || props.selectedNodes.has(node.id))
@@ -29,6 +31,8 @@ const isSelected = computed(() =>
 const isChildSelected = computed(
   () => !isSelected.value && traverseAndCheck(props.node, node => props.selectedNodes.has(node.id))
 );
+
+emit('created', props.node);
 </script>
 
 <script lang="ts">
@@ -57,6 +61,7 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
             :indent-px="indentPx"
             :transition-ms="transitionMs"
             :no-transition="noTransition"
+            @created="emit('created', $event)"
           >
             <template #node-content="scope">
               <slot

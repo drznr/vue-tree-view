@@ -1,11 +1,18 @@
 import type { ConditionFn, INode } from './types';
 
-type THandler = (node: INode, depth: number) => unknown;
-export function traverse(node: INode, handler: THandler, depth = 0) {
+export function traverse(node: INode, handler: (node: INode, depth: number) => void, depth = 0) {
   handler(node, depth);
 
   if (node.children?.length) {
     node.children.forEach(childNode => traverse(childNode, handler, depth + 1));
+  }
+}
+
+export async function traverseAsync(node: INode, handler: (node: INode, depth: number) => Promise<void>, depth = 0) {
+  await handler(node, depth);
+
+  if (node.children?.length) {
+    await Promise.all(node.children.map(childNode => traverseAsync(childNode, handler, depth + 1)));
   }
 }
 

@@ -5,18 +5,18 @@ export type TestWrapper<VM extends DefinedComponent> = VueWrapper<InstanceType<V
   ReturnType<typeof customBehaviors>;
 
 const customBehaviors = (wrapper: VueWrapper) => ({
-  findByText(text: string, selector = '*'): DOMWrapper<Element> | null {
-    const elements = wrapper.findAll(selector);
+  findByText<T extends Element>(text: string, selector = '*'): DOMWrapper<T> | null {
+    const elements = wrapper.findAll<T>(selector);
     return elements.find(el => el.text().trim() === text.trim()) ?? null;
   },
-  findAllByText(text: string, selector = '*') {
-    return wrapper.findAll(selector).filter(el => el.text().trim() === text.trim());
+  findAllByText<T extends Element>(text: string, selector = '*') {
+    return wrapper.findAll<T>(selector).filter(el => el.text().trim() === text.trim());
   },
-  findByTestId(testId: string) {
-    return wrapper.get(`[data-testid="${testId}"]`);
+  findByTestId<T extends Element>(testId: string) {
+    return wrapper.get<T>(`[data-testid="${testId}"]`);
   },
-  findAllByTestId(testId: string) {
-    return wrapper.findAll(`[data-testid="${testId}"]`);
+  findAllByTestId<T extends Element>(testId: string) {
+    return wrapper.findAll<T>(`[data-testid="${testId}"]`);
   },
 });
 

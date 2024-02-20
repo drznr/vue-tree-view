@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { ConditionFn, INode } from './types';
+import type { ConditionFn, INode, AsyncVoidFunction } from './types';
 import treeNode from './components/tree-node.vue';
-import { debounce, traverse, getAllNodesValuesUnique, filterNodes } from './utils';
+import { debounce, traverse, getAllNodesValuesUnique, filterNodes, traverseAsync } from './utils';
 
 defineSlots<{
   controls(props: {
-    expandAll: VoidFunction;
+    expandAll: AsyncVoidFunction;
     collapseAll: VoidFunction;
-    selectAll: VoidFunction;
+    selectAll: AsyncVoidFunction;
     unselectAll: VoidFunction;
     expandToSelection: VoidFunction;
     resetFilter: VoidFunction;
@@ -21,6 +21,8 @@ defineSlots<{
     expanded: boolean;
     selected: boolean;
     indeterminate: boolean;
+    fetching: boolean;
+    error: boolean;
     toggleExpand: VoidFunction;
     toggleSelection: (isUnselect: boolean) => void;
   }): unknown;
@@ -35,12 +37,14 @@ const props = withDefaults(
     noTransition?: boolean;
     defaultExpandAll?: boolean;
     indentPx?: number;
+    fetchChildren?: (nodeId: string) => Promise<INode[] | undefined>;
   }>(),
   {
     debounceMs: 300,
     transitionMs: 300,
     indentPx: 24,
     modelValue: () => [],
+    fetchChildren: undefined,
   }
 );
 
@@ -56,18 +60,18 @@ defineExpose({
   unselectAll,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{ 'update:modelValue': [payload: string[]]; 'on-error': [error: Error] }>();
 
 const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
 const nodesModel = ref(nodesCopy);
 
-const expandedNodes = ref(
-  props.defaultExpandAll
-    ? getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length)
-    : new Set<string>()
-);
+const expandedNodes = ref(new Set<string>());
 const selectedNodes = ref(new Set<string>(props.modelValue));
+
+const nodeIdIsHttpStateMap = ref(new Map<string, { fetching: boolean; error?: Error }>());
+
+if (props.defaultExpandAll) expandAll();
 
 function toggleExpand(node: INode) {
   if (!node.children?.length) return;
@@ -76,7 +80,10 @@ function toggleExpand(node: INode) {
   else expandedNodes.value.add(node.id);
 }
 
-function expandAll() {
+async function expandAll() {
+  if (props.fetchChildren) {
+    await appendAllNodes();
+  }
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length);
   expandedNodes.value = allNodeIds;
 }
@@ -85,7 +92,10 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-function search(conditionFn: ConditionFn) {
+async function search(conditionFn: ConditionFn) {
+  if (props.fetchChildren) {
+    await appendAllNodes();
+  }
   collapseAll();
 
   const path: string[] = [];
@@ -102,7 +112,11 @@ function search(conditionFn: ConditionFn) {
   nodesModel.value.forEach(node => traverse(node, handler));
 }
 
-function toggleSelection(baseNode: INode, isUnselect: boolean) {
+async function toggleSelection(baseNode: INode, isUnselect: boolean) {
+  if (props.fetchChildren) {
+    await traverseAsync(baseNode, appendChildrenToNode);
+  }
+
   const handler = (node: INode) => {
     if (node.children?.length) return;
 
@@ -115,7 +129,11 @@ function toggleSelection(baseNode: INode, isUnselect: boolean) {
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
-function selectAll() {
+async function selectAll() {
+  if (props.fetchChildren) {
+    await appendAllNodes();
+  }
+
   const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !node.children?.length);
 
   selectedNodes.value = allNodeIds;
@@ -145,7 +163,11 @@ function expandToSelection() {
   nodesModel.value.forEach(node => traverse(node, handler));
 }
 
-function filter(conditionFn: ConditionFn) {
+async function filter(conditionFn: ConditionFn) {
+  if (props.fetchChildren) {
+    await appendAllNodes();
+  }
+
   resetFilter();
   nodesModel.value = filterNodes(nodesModel.value, conditionFn);
   expandAll();
@@ -154,6 +176,34 @@ function filter(conditionFn: ConditionFn) {
 function resetFilter() {
   nodesModel.value = nodesCopy;
   collapseAll();
+}
+
+async function appendChildrenToNode(node: INode) {
+  if (props.fetchChildren && !node.children?.length && !nodeIdIsHttpStateMap.value.has(node.id)) {
+    try {
+      nodeIdIsHttpStateMap.value.set(node.id, { fetching: true });
+      const fetchedChildren = await props.fetchChildren?.(node.id);
+      nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
+
+      if (!fetchedChildren?.length) {
+        return;
+      }
+
+      nodesModel.value.forEach(rootNode => {
+        traverse(rootNode, currentNode => {
+          if (currentNode.id === node.id) currentNode.children = fetchedChildren;
+        });
+      });
+    } catch (originalError) {
+      const error = new Error(`Faild to fetch children for node: [${node.id}]`, { cause: originalError });
+      emit('on-error', error);
+      nodeIdIsHttpStateMap.value.set(node.id, { fetching: false, error });
+    }
+  }
+}
+
+async function appendAllNodes() {
+  await Promise.all(nodesModel.value.map(rootNode => traverseAsync(rootNode, appendChildrenToNode)));
 }
 
 const debouncedSearch = debounce(search, props.debounceMs);
@@ -182,6 +232,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :indent-px="indentPx"
       :transition-ms="transitionMs"
       :no-transition="noTransition"
+      @created="appendChildrenToNode"
     >
       <template #node-content="scope">
         <slot
@@ -190,6 +241,8 @@ const debounceFitler = debounce(filter, props.debounceMs);
           :expanded="scope.expanded"
           :selected="scope.selected"
           :indeterminate="scope.indeterminate"
+          :fetching="!!nodeIdIsHttpStateMap.get(scope.node.id)?.fetching"
+          :error="!!nodeIdIsHttpStateMap.get(scope.node.id)?.error"
           :toggle-expand="() => toggleExpand(scope.node)"
           :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
         />

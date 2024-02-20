@@ -5,3 +5,5 @@ export interface INode {
 }
 
 export type ConditionFn = (node: INode) => boolean;
+
+export type AsyncVoidFunction = () => Promise<void>;
