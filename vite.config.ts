@@ -36,6 +36,7 @@ export default defineConfig({
         '**/types.ts/**',
         '**/*.stories.*/**',
         'tailwind.config.js',
+        'src/index.ts',
       ],
     },
   },
