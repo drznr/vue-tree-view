@@ -12,8 +12,8 @@ defineSlots<{
     unselectAll: VoidFunction;
     expandToSelection: VoidFunction;
     resetFilter: VoidFunction;
-    filter: (conditionFn: ConditionFn) => void;
-    search: (conditionFn: ConditionFn) => void;
+    filter: (conditionFn: ConditionFn<INode>) => void;
+    search: (conditionFn: ConditionFn<INode>) => void;
   }): unknown;
 
   ['node-content'](props: {
@@ -84,7 +84,12 @@ async function expandAll() {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
-  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !!node.children?.length);
+  const allNodeIds = getAllNodesValuesUnique<INode, string>(
+    nodesModel.value,
+    'children',
+    'id',
+    node => !!node.children?.length
+  );
   expandedNodes.value = allNodeIds;
 }
 
@@ -92,7 +97,7 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-async function search(conditionFn: ConditionFn) {
+async function search(conditionFn: ConditionFn<INode>) {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
@@ -109,12 +114,12 @@ async function search(conditionFn: ConditionFn) {
     }
   };
 
-  nodesModel.value.forEach(node => traverse(node, handler));
+  nodesModel.value.forEach(node => traverse(node, 'children', handler));
 }
 
 async function toggleSelection(baseNode: INode, isUnselect: boolean) {
   if (props.fetchChildren) {
-    await traverseAsync(baseNode, appendChildrenToNode);
+    await traverseAsync(baseNode, 'children', appendChildrenToNode);
   }
 
   const handler = (node: INode) => {
@@ -124,7 +129,7 @@ async function toggleSelection(baseNode: INode, isUnselect: boolean) {
     else selectedNodes.value.add(node.id);
   };
 
-  traverse(baseNode, handler);
+  traverse(baseNode, 'children', handler);
 
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
@@ -134,7 +139,12 @@ async function selectAll() {
     await appendAllNodes();
   }
 
-  const allNodeIds = getAllNodesValuesUnique<string>(nodesModel.value, node => !node.children?.length);
+  const allNodeIds = getAllNodesValuesUnique<INode, string>(
+    nodesModel.value,
+    'children',
+    'id',
+    node => !node.children?.length
+  );
 
   selectedNodes.value = allNodeIds;
   emit('update:modelValue', Array.from(allNodeIds));
@@ -160,16 +170,16 @@ function expandToSelection() {
     }
   };
 
-  nodesModel.value.forEach(node => traverse(node, handler));
+  nodesModel.value.forEach(node => traverse(node, 'children', handler));
 }
 
-async function filter(conditionFn: ConditionFn) {
+async function filter(conditionFn: ConditionFn<INode>) {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
 
   resetFilter();
-  nodesModel.value = filterNodes(nodesModel.value, conditionFn);
+  nodesModel.value = filterNodes(nodesModel.value, 'children', conditionFn);
   expandAll();
 }
 
@@ -190,7 +200,7 @@ async function appendChildrenToNode(node: INode) {
       }
 
       nodesModel.value.forEach(rootNode => {
-        traverse(rootNode, currentNode => {
+        traverse(rootNode, 'children', currentNode => {
           if (currentNode.id === node.id) currentNode.children = fetchedChildren;
         });
       });
@@ -203,7 +213,7 @@ async function appendChildrenToNode(node: INode) {
 }
 
 async function appendAllNodes() {
-  await Promise.all(nodesModel.value.map(rootNode => traverseAsync(rootNode, appendChildrenToNode)));
+  await Promise.all(nodesModel.value.map(rootNode => traverseAsync(rootNode, 'children', appendChildrenToNode)));
 }
 
 const debouncedSearch = debounce(search, props.debounceMs);

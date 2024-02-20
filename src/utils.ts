@@ -1,51 +1,64 @@
-import type { ConditionFn, INode } from './types';
+import type { ConditionFn } from './types';
 
-export function traverse(node: INode, handler: (node: INode, depth: number) => void, depth = 0) {
+export function traverse<T>(node: T, childrenKey: keyof T, handler: (node: T, depth: number) => void, depth = 0) {
   handler(node, depth);
 
-  if (node.children?.length) {
-    node.children.forEach(childNode => traverse(childNode, handler, depth + 1));
+  const children = getNodeChildren(node, childrenKey);
+  if (children?.length) {
+    children.forEach(childNode => traverse(childNode, childrenKey, handler, depth + 1));
   }
 }
 
-export async function traverseAsync(node: INode, handler: (node: INode, depth: number) => Promise<void>, depth = 0) {
+export async function traverseAsync<T>(
+  node: T,
+  childrenKey: keyof T,
+  handler: (node: T, depth: number) => Promise<void>,
+  depth = 0
+) {
   await handler(node, depth);
 
-  if (node.children?.length) {
-    await Promise.all(node.children.map(childNode => traverseAsync(childNode, handler, depth + 1)));
+  const children = getNodeChildren(node, childrenKey);
+  if (children?.length) {
+    await Promise.all(children.map(childNode => traverseAsync(childNode, childrenKey, handler, depth + 1)));
   }
 }
 
-export function traverseAndCheck(
-  node: INode,
-  conditionFn: (node: INode, depth: number) => boolean,
+export function traverseAndCheck<T>(
+  node: T,
+  childrenKey: keyof T,
+  conditionFn: (node: T, depth: number) => boolean,
   depth = 0
 ): boolean {
   if (conditionFn(node, depth)) {
     return true;
   }
 
-  if (node.children?.length) {
-    for (const childNode of node.children) {
-      if (traverseAndCheck(childNode, conditionFn, depth + 1)) return true;
+  const children = getNodeChildren(node, childrenKey);
+
+  if (children?.length) {
+    for (const childNode of children) {
+      if (traverseAndCheck(childNode, childrenKey, conditionFn, depth + 1)) return true;
     }
   }
 
   return false;
 }
 
-export function traverseAndCheckAll(
-  node: INode,
-  conditionFn: (node: INode, depth: number) => boolean,
+export function traverseAndCheckAll<T>(
+  node: T,
+  childrenKey: keyof T,
+  conditionFn: (node: T, depth: number) => boolean,
   depth = 0
 ): boolean {
   if (!conditionFn(node, depth)) {
     return false;
   }
 
-  if (node.children?.length) {
-    for (const childNode of node.children) {
-      if (!traverseAndCheckAll(childNode, conditionFn, depth + 1)) return false;
+  const children = getNodeChildren(node, childrenKey);
+
+  if (children?.length) {
+    for (const childNode of children) {
+      if (!traverseAndCheckAll(childNode, childrenKey, conditionFn, depth + 1)) return false;
     }
   }
 
@@ -61,37 +74,50 @@ export function debounce<A extends unknown[], R>(fn: (...args: A) => R, ms: numb
   };
 }
 
-export function getAllNodesValuesUnique<T extends INode[keyof INode]>(
-  rootNode: INode | INode[],
-  conditionFn: ConditionFn = () => true,
-  prop: keyof INode = 'id'
+export function getAllNodesValuesUnique<T, V extends T[keyof T]>(
+  rootNode: T | T[],
+  childrenKey: keyof T,
+  valuesKey: keyof T,
+  conditionFn: ConditionFn<T> = () => true
 ) {
-  const set: Set<T> = new Set();
+  const set: Set<V> = new Set();
   const nodes = Array.isArray(rootNode) ? rootNode : [rootNode];
 
   nodes.forEach(node => {
-    traverse(node, (currentNode: INode) => conditionFn(currentNode) && set.add(currentNode[prop] as T));
+    traverse(node, childrenKey, (currentNode: T) => conditionFn(currentNode) && set.add(currentNode[valuesKey] as V));
   });
 
   return set;
 }
 
-export function filterNodes(nodes: INode[], conditionFn: ConditionFn): INode[] {
-  const filteredNodes: INode[] = [];
+export function filterNodes<T>(nodes: T[], childrenKey: keyof T, conditionFn: ConditionFn<T>): T[] {
+  const filteredNodes: T[] = [];
 
   nodes.forEach(node => {
     if (conditionFn(node)) {
       filteredNodes.push({ ...node });
     }
 
-    if (node.children?.length) {
-      const filteredChildren = filterNodes(node.children, conditionFn);
+    const children = getNodeChildren(node, childrenKey);
+
+    if (children?.length) {
+      const filteredChildren = filterNodes(children, childrenKey, conditionFn);
 
       if (filteredChildren.length) {
-        filteredNodes.push({ ...node, children: filteredChildren });
+        filteredNodes.push({ ...node, [childrenKey]: filteredChildren });
       }
     }
   });
 
   return filteredNodes;
+}
+
+function getNodeChildren<T>(node: T, childrenKey: keyof T) {
+  const children = node[childrenKey];
+
+  if (!Array.isArray(children) && children !== undefined) {
+    throw new Error(`Invalid children for node: [${JSON.stringify(node, undefined, '\t')}]`);
+  }
+
+  return children as T[] | undefined;
 }

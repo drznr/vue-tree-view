@@ -4,6 +4,6 @@ export interface INode {
   children?: INode[];
 }
 
-export type ConditionFn = (node: INode) => boolean;
+export type ConditionFn<T> = (node: T) => boolean;
 
 export type AsyncVoidFunction = () => Promise<void>;

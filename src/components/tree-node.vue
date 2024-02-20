@@ -26,10 +26,10 @@ const emit = defineEmits<(event: 'created', node: INode) => void>();
 
 const isExpanded = computed(() => props.expandedNodes.has(props.node.id));
 const isSelected = computed(() =>
-  traverseAndCheckAll(props.node, node => !!node.children?.length || props.selectedNodes.has(node.id))
+  traverseAndCheckAll(props.node, 'children', node => !!node.children?.length || props.selectedNodes.has(node.id))
 );
 const isChildSelected = computed(
-  () => !isSelected.value && traverseAndCheck(props.node, node => props.selectedNodes.has(node.id))
+  () => !isSelected.value && traverseAndCheck(props.node, 'children', node => props.selectedNodes.has(node.id))
 );
 
 emit('created', props.node);
