@@ -1,17 +1,18 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
 import { computed } from 'vue';
-import type { INode } from '../types';
-import { traverseAndCheck, traverseAndCheckAll } from '../utils';
+import { getNodeChildren, getNodeId, traverseAndCheck, traverseAndCheckAll } from '../utils';
 
 defineSlots<{
-  ['node-content'](props: { node: INode; expanded: boolean; selected: boolean; indeterminate: boolean }): unknown;
+  ['node-content'](props: { node: T; expanded: boolean; selected: boolean; indeterminate: boolean }): unknown;
 }>();
 
 const props = withDefaults(
   defineProps<{
-    node: INode;
+    node: T;
     expandedNodes: Set<string>;
     selectedNodes: Set<string>;
+    idKey: keyof T;
+    childrenKey: keyof T;
     indentPx: number;
     transitionMs: number;
     noTransition?: boolean;
@@ -22,15 +23,22 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits<(event: 'created', node: INode) => void>();
+const emit = defineEmits<(event: 'created', node: T) => void>();
 
-const isExpanded = computed(() => props.expandedNodes.has(props.node.id));
+const isExpanded = computed(() => props.expandedNodes.has(getNodeId(props.node, props.idKey)));
 const isSelected = computed(() =>
-  traverseAndCheckAll(props.node, 'children', node => !!node.children?.length || props.selectedNodes.has(node.id))
+  traverseAndCheckAll(
+    props.node,
+    props.childrenKey,
+    node => !!getNodeChildren(node, props.childrenKey)?.length || props.selectedNodes.has(getNodeId(node, props.idKey))
+  )
 );
 const isChildSelected = computed(
-  () => !isSelected.value && traverseAndCheck(props.node, 'children', node => props.selectedNodes.has(node.id))
+  () =>
+    !isSelected.value &&
+    traverseAndCheck(props.node, props.childrenKey, node => props.selectedNodes.has(getNodeId(node, props.idKey)))
 );
+const nodeChildren = computed(() => getNodeChildren(props.node, props.childrenKey));
 
 emit('created', props.node);
 </script>
@@ -43,21 +51,23 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
   <component :is="rootElement" :data-testid="TREE_NODE_TEST_ID">
     <slot
       name="node-content"
-      :node="node"
+      :node="node as T"
       :expanded="isExpanded"
       :selected="isSelected"
       :indeterminate="isChildSelected"
     />
 
     <Transition :name="noTransition ? '' : 'slide-fade'">
-      <template v-if="node.children?.length && isExpanded">
+      <template v-if="nodeChildren?.length && isExpanded">
         <ul :style="{ marginInlineStart: indentPx + 'px' }">
           <tree-node
-            v-for="childNode in node.children"
-            :key="childNode.id"
-            :node="childNode"
+            v-for="childNode in nodeChildren"
+            :key="getNodeId(childNode, props.idKey)"
+            :node="childNode as typeof node"
             :expanded-nodes="expandedNodes"
             :selected-nodes="selectedNodes"
+            :id-key="idKey"
+            :children-key="childrenKey"
             :indent-px="indentPx"
             :transition-ms="transitionMs"
             :no-transition="noTransition"
