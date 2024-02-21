@@ -13,10 +13,11 @@ describe('<tree-view />', () => {
       nodes: ANIMALS_TREE,
     },
   };
-  const mountComponent = (options?: MountFnOptions) => {
+  const mountComponent = (options: MountFnOptions = {}) => {
     return mount(treeView, {
       ...OPTIONS,
       ...options,
+      // @ts-expect-error TODO: pass the generic to typeof treeView
     }) as unknown as TestWrapper<typeof treeView>;
   };
 
@@ -103,7 +104,8 @@ describe('<tree-view />', () => {
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      wrapper.vm.search(node => !!node.name?.includes('lizard'));
+      // TODO: pass the generic to typeof treeView and remove type
+      wrapper.vm.search((node: typeof ANIMALS_TREE) => !!node.name?.includes('lizard'));
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
@@ -303,7 +305,8 @@ describe('<tree-view />', () => {
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      wrapper.vm.filter(node => node.name === 'Baboon');
+      // TODO: pass the generic to typeof treeView and remove type
+      wrapper.vm.filter((node: typeof ANIMALS_TREE) => node.name === 'Baboon');
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
@@ -314,7 +317,8 @@ describe('<tree-view />', () => {
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      wrapper.vm.filter(node => node.name === 'Baboon');
+      // TODO: pass the generic to typeof treeView and remove type
+      wrapper.vm.filter((node: typeof ANIMALS_TREE) => node.name === 'Baboon');
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
@@ -456,7 +460,8 @@ describe('<tree-view />', () => {
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        await wrapper.vm.search(node => node.id === '1.1.1.1.1');
+        // TODO: pass the generic to typeof treeView and remove type
+        await wrapper.vm.search((node: typeof ASYNC_TREE) => node.id === '1.1.1.1.1');
         await wrapper.vm.$nextTick();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(12);
@@ -718,7 +723,8 @@ describe('<tree-view />', () => {
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        await wrapper.vm.filter(node => node.id === '1.1.1.1.1');
+        // TODO: pass the generic to typeof treeView and remove type
+        await wrapper.vm.filter((node: typeof ASYNC_TREE) => node.id === '1.1.1.1.1');
 
         await flushPromises();
 
@@ -730,7 +736,8 @@ describe('<tree-view />', () => {
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        await wrapper.vm.filter(node => node.id === '1.1.1.1.1');
+        // TODO: pass the generic to typeof treeView and remove type
+        await wrapper.vm.filter((node: typeof ASYNC_TREE) => node.id === '1.1.1.1.1');
         await flushPromises();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);

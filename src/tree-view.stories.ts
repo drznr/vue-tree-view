@@ -7,13 +7,15 @@ import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
 
 export default {
   title: 'Tree View',
-  component: TreeView,
+  // TODO: a way to pass the generic to TreeView and remove assertion
+  component: TreeView as unknown as Record<string, unknown>,
   tags: ['autodocs'],
 } satisfies Meta;
 
 type Story = StoryObj<typeof TreeView>;
 
 const BaseTemplate: Story = {
+  // @ts-expect-error TODO: fix SB with vue generics
   render: args => ({
     components: { TreeView },
     setup() {
@@ -22,6 +24,7 @@ const BaseTemplate: Story = {
       const model = ref<string[]>([]);
       const updateModel = (event: string[]) => {
         model.value = event;
+        // @ts-expect-error TODO: fix SB with vue generics
         args['onUpdate:modelValue']?.(event);
       };
 
