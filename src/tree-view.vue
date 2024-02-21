@@ -40,11 +40,10 @@ const props = withDefaults(
     fetchChildren?: (nodeId: string) => Promise<INode[] | undefined>;
   }>(),
   {
+    modelValue: () => [],
     debounceMs: 300,
     transitionMs: 300,
     indentPx: 24,
-    modelValue: () => [],
-    fetchChildren: undefined,
   }
 );
 
