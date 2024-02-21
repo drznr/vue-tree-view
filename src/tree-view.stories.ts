@@ -4,6 +4,7 @@ import { ANIMALS_TREE } from './__mocks__/animals';
 import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
 import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
+import { CUSTOM_DATA_ANIMALS_TREE } from './__mocks__/custom-data';
 
 export default {
   title: 'Tree View',
@@ -139,5 +140,14 @@ export const Async: Story = {
   args: {
     nodes: ASYNC_TREE,
     fetchChildren: getMockChildren,
+  },
+};
+
+export const CustomData: Story = {
+  ...BaseTemplate,
+  args: {
+    nodes: CUSTOM_DATA_ANIMALS_TREE,
+    idKey: '_id',
+    childrenKey: 'childs',
   },
 };
