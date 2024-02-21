@@ -49,7 +49,7 @@ const props = withDefaults(
     transitionMs?: number;
     noTransition?: boolean;
     indentPx?: number;
-    fetchChildren?: (nodeId: string) => Promise<T[] | undefined>;
+    fetchChildren?: (nodeId: string) => Promise<T[] | null | undefined>;
   }>(),
   {
     modelValue: () => [],

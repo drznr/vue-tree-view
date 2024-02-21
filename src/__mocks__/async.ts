@@ -13,12 +13,12 @@ export const ASYNC_TREE: INode = {
   ],
 };
 
-export const getMockChildren = (nodeId: string): Promise<INode[] | undefined> => {
+export const getMockChildren = (nodeId: string): Promise<INode[] | null> => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(
         nodeId.length > 8
-          ? undefined
+          ? null
           : Array(3)
               .fill(null)
               .map((_, i) => ({
