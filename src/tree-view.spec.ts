@@ -334,7 +334,7 @@ describe('<tree-view />', () => {
     const ASYNC_OPTIONS: MountFnOptions = {
       props: {
         nodes: ASYNC_TREE,
-        fetchChildren: getMockChildren,
+        fetchChildren: (nodeId: string) => getMockChildren(nodeId, 10),
       },
     };
     const mountComponentAsyncMode = (options: MountFnOptions = {}) => mountComponent({ ...ASYNC_OPTIONS, ...options });

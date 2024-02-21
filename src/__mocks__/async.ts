@@ -13,7 +13,7 @@ export const ASYNC_TREE: INode = {
   ],
 };
 
-export const getMockChildren = (nodeId: string): Promise<INode[] | null> => {
+export const getMockChildren = (nodeId: string, timeout = 300): Promise<INode[] | null> => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(
@@ -26,6 +26,6 @@ export const getMockChildren = (nodeId: string): Promise<INode[] | null> => {
                 name: nodeId.length + '-node-' + (Math.random() + 1).toString(36).substring(7),
               }))
       );
-    }, 300);
+    }, timeout);
   });
 };
