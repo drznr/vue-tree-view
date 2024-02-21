@@ -1,8 +1,18 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-import type { ConditionFn, INode, AsyncVoidFunction } from './types';
+<script setup lang="ts" generic="T">
+import { computed, ref, type Ref } from 'vue';
+import type { ConditionFn, AsyncVoidFunction } from './types';
 import treeNode from './components/tree-node.vue';
-import { debounce, traverse, getAllNodesValuesUnique, filterNodes, traverseAsync } from './utils';
+import {
+  debounce,
+  traverse,
+  getAllNodesValuesUnique,
+  filterNodes,
+  traverseAsync,
+  getNodeChildren,
+  getNodeId,
+} from './utils';
+
+type TValue = T[keyof T] extends T[] ? TValue : never;
 
 defineSlots<{
   controls(props: {
@@ -12,12 +22,12 @@ defineSlots<{
     unselectAll: VoidFunction;
     expandToSelection: VoidFunction;
     resetFilter: VoidFunction;
-    filter: (conditionFn: ConditionFn<INode>) => void;
-    search: (conditionFn: ConditionFn<INode>) => void;
+    filter: (conditionFn: ConditionFn<T>) => void;
+    search: (conditionFn: ConditionFn<T>) => void;
   }): unknown;
 
   ['node-content'](props: {
-    node: INode;
+    node: T;
     expanded: boolean;
     selected: boolean;
     indeterminate: boolean;
@@ -30,14 +40,16 @@ defineSlots<{
 
 const props = withDefaults(
   defineProps<{
-    nodes: INode | INode[];
+    nodes: T | T[];
     modelValue?: string[];
+    defaultExpandAll?: boolean;
+    idKey?: keyof T;
+    childrenKey?: keyof T;
     debounceMs?: number;
     transitionMs?: number;
     noTransition?: boolean;
-    defaultExpandAll?: boolean;
     indentPx?: number;
-    fetchChildren?: (nodeId: string) => Promise<INode[] | undefined>;
+    fetchChildren?: (nodeId: string) => Promise<T[] | undefined>;
   }>(),
   {
     modelValue: () => [],
@@ -63,31 +75,36 @@ const emit = defineEmits<{ 'update:modelValue': [payload: string[]]; 'on-error':
 
 const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
-const nodesModel = ref(nodesCopy);
+const nodesModel = ref<T[]>(nodesCopy) as Ref<T[]>;
 
 const expandedNodes = ref(new Set<string>());
 const selectedNodes = ref(new Set<string>(props.modelValue));
 
 const nodeIdIsHttpStateMap = ref(new Map<string, { fetching: boolean; error?: Error }>());
 
+const childrenKey = computed(() => (props.childrenKey ?? 'children') as keyof T);
+const idKey = computed(() => (props.idKey ?? 'id') as keyof T);
+
 if (props.defaultExpandAll) expandAll();
 
-function toggleExpand(node: INode) {
-  if (!node.children?.length) return;
+function toggleExpand(node: T) {
+  if (!getNodeChildren(node, childrenKey.value)?.length) return;
 
-  if (expandedNodes.value.has(node.id)) expandedNodes.value.delete(node.id);
-  else expandedNodes.value.add(node.id);
+  const nodeId = getNodeId(node, idKey.value);
+
+  if (expandedNodes.value.has(nodeId)) expandedNodes.value.delete(nodeId);
+  else expandedNodes.value.add(nodeId);
 }
 
 async function expandAll() {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
-  const allNodeIds = getAllNodesValuesUnique<INode, string>(
+  const allNodeIds = getAllNodesValuesUnique<T, string>(
     nodesModel.value,
-    'children',
-    'id',
-    node => !!node.children?.length
+    childrenKey.value,
+    idKey.value,
+    node => !!getNodeChildren(node, childrenKey.value)?.length
   );
   expandedNodes.value = allNodeIds;
 }
@@ -96,15 +113,15 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-async function search(conditionFn: ConditionFn<INode>) {
+async function search(conditionFn: ConditionFn<T>) {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
   collapseAll();
 
   const path: string[] = [];
-  const handler = (node: INode, depth: number) => {
-    path[depth] = node.id;
+  const handler = (node: T, depth: number) => {
+    path[depth] = getNodeId(node, idKey.value);
 
     if (conditionFn(node)) {
       path.forEach(nodeId => {
@@ -113,22 +130,24 @@ async function search(conditionFn: ConditionFn<INode>) {
     }
   };
 
-  nodesModel.value.forEach(node => traverse(node, 'children', handler));
+  nodesModel.value.forEach(node => traverse(node, childrenKey.value, handler));
 }
 
-async function toggleSelection(baseNode: INode, isUnselect: boolean) {
+async function toggleSelection(baseNode: T, isUnselect: boolean) {
   if (props.fetchChildren) {
-    await traverseAsync(baseNode, 'children', appendChildrenToNode);
+    await traverseAsync(baseNode, childrenKey.value, appendChildrenToNode);
   }
 
-  const handler = (node: INode) => {
-    if (node.children?.length) return;
+  const handler = (node: T) => {
+    if (getNodeChildren(node, childrenKey.value)?.length) return;
 
-    if (isUnselect) selectedNodes.value.delete(node.id);
-    else selectedNodes.value.add(node.id);
+    const nodeId = getNodeId(node, idKey.value);
+
+    if (isUnselect) selectedNodes.value.delete(nodeId);
+    else selectedNodes.value.add(nodeId);
   };
 
-  traverse(baseNode, 'children', handler);
+  traverse(baseNode, childrenKey.value, handler);
 
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
@@ -138,11 +157,11 @@ async function selectAll() {
     await appendAllNodes();
   }
 
-  const allNodeIds = getAllNodesValuesUnique<INode, string>(
+  const allNodeIds = getAllNodesValuesUnique<T, string>(
     nodesModel.value,
-    'children',
-    'id',
-    node => !node.children?.length
+    childrenKey.value,
+    idKey.value,
+    node => !getNodeChildren(node, childrenKey.value)?.length
   );
 
   selectedNodes.value = allNodeIds;
@@ -159,26 +178,27 @@ function expandToSelection() {
   if (selectedNodes.value.size === 0) return;
 
   const path: string[] = [];
-  const handler = (node: INode, depth: number) => {
-    path[depth] = node.id;
+  const handler = (node: T, depth: number) => {
+    const nodeId = getNodeId(node, idKey.value);
+    path[depth] = nodeId;
 
-    if (selectedNodes.value.has(node.id)) {
-      path.forEach(nodeId => {
-        expandedNodes.value.add(nodeId);
+    if (selectedNodes.value.has(nodeId)) {
+      path.forEach(id => {
+        expandedNodes.value.add(id);
       });
     }
   };
 
-  nodesModel.value.forEach(node => traverse(node, 'children', handler));
+  nodesModel.value.forEach(node => traverse(node, childrenKey.value, handler));
 }
 
-async function filter(conditionFn: ConditionFn<INode>) {
+async function filter(conditionFn: ConditionFn<T>) {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
 
   resetFilter();
-  nodesModel.value = filterNodes(nodesModel.value, 'children', conditionFn);
+  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, conditionFn);
   expandAll();
 }
 
@@ -187,32 +207,39 @@ function resetFilter() {
   collapseAll();
 }
 
-async function appendChildrenToNode(node: INode) {
-  if (props.fetchChildren && !node.children?.length && !nodeIdIsHttpStateMap.value.has(node.id)) {
+async function appendChildrenToNode(node: T) {
+  const nodeId = getNodeId(node, idKey.value);
+  if (
+    props.fetchChildren &&
+    !getNodeChildren(node, childrenKey.value)?.length &&
+    !nodeIdIsHttpStateMap.value.has(nodeId)
+  ) {
     try {
-      nodeIdIsHttpStateMap.value.set(node.id, { fetching: true });
-      const fetchedChildren = await props.fetchChildren?.(node.id);
-      nodeIdIsHttpStateMap.value.set(node.id, { fetching: false });
+      nodeIdIsHttpStateMap.value.set(nodeId, { fetching: true });
+      const fetchedChildren = await props.fetchChildren?.(nodeId);
+      nodeIdIsHttpStateMap.value.set(nodeId, { fetching: false });
 
       if (!fetchedChildren?.length) {
         return;
       }
 
       nodesModel.value.forEach(rootNode => {
-        traverse(rootNode, 'children', currentNode => {
-          if (currentNode.id === node.id) currentNode.children = fetchedChildren;
+        traverse(rootNode, childrenKey.value, currentNode => {
+          if (getNodeId(currentNode, idKey.value) === nodeId) {
+            currentNode[childrenKey.value] = fetchedChildren as TValue;
+          }
         });
       });
     } catch (originalError) {
-      const error = new Error(`Faild to fetch children for node: [${node.id}]`, { cause: originalError });
+      const error = new Error(`Faild to fetch children for node: [${nodeId}]`, { cause: originalError });
       emit('on-error', error);
-      nodeIdIsHttpStateMap.value.set(node.id, { fetching: false, error });
+      nodeIdIsHttpStateMap.value.set(nodeId, { fetching: false, error });
     }
   }
 }
 
 async function appendAllNodes() {
-  await Promise.all(nodesModel.value.map(rootNode => traverseAsync(rootNode, 'children', appendChildrenToNode)));
+  await Promise.all(nodesModel.value.map(rootNode => traverseAsync(rootNode, childrenKey.value, appendChildrenToNode)));
 }
 
 const debouncedSearch = debounce(search, props.debounceMs);
@@ -234,15 +261,15 @@ const debounceFitler = debounce(filter, props.debounceMs);
   <ul>
     <tree-node
       v-for="node in nodesModel"
-      :key="node.id"
+      :key="getNodeId(node, idKey)"
       :node="node"
       :expanded-nodes="expandedNodes"
       :selected-nodes="selectedNodes"
-      id-key="id"
-      children-key="children"
       :indent-px="indentPx"
       :transition-ms="transitionMs"
       :no-transition="noTransition"
+      :id-key="idKey"
+      :children-key="childrenKey"
       @created="appendChildrenToNode"
     >
       <template #node-content="scope">
@@ -252,8 +279,8 @@ const debounceFitler = debounce(filter, props.debounceMs);
           :expanded="scope.expanded"
           :selected="scope.selected"
           :indeterminate="scope.indeterminate"
-          :fetching="!!nodeIdIsHttpStateMap.get(scope.node.id)?.fetching"
-          :error="!!nodeIdIsHttpStateMap.get(scope.node.id)?.error"
+          :fetching="!!nodeIdIsHttpStateMap.get(getNodeId(scope.node, idKey))?.fetching"
+          :error="!!nodeIdIsHttpStateMap.get(getNodeId(scope.node, idKey))?.error"
           :toggle-expand="() => toggleExpand(scope.node)"
           :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
         />

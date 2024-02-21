@@ -1,4 +1,8 @@
-import type { INode } from 'src/types';
+interface INode {
+  id: string;
+  name: string;
+  children?: INode[];
+}
 
 export const ASYNC_TREE: INode = {
   id: '1',
