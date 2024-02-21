@@ -64,7 +64,7 @@ export function debounce<A extends unknown[], R>(fn: (...args: A) => R, ms: numb
   };
 }
 
-export function getAllNodesValuesUnique<T, V extends T[keyof T]>(
+export function getAllNodesValuesUnique<T, V = unknown>(
   rootNode: T | T[],
   childrenKey: keyof T,
   valuesKey: keyof T,
