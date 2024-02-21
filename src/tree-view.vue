@@ -37,7 +37,7 @@ const props = withDefaults(
     noTransition?: boolean;
     defaultExpandAll?: boolean;
     indentPx?: number;
-    fetchChildren?: (nodeId: string) => Promise<INode[] | undefined>;
+    fetchChildren?: (nodeId: string) => Promise<INode[] | null | undefined>;
   }>(),
   {
     debounceMs: 300,
