@@ -88,7 +88,8 @@ export function filterNodes(nodes: INode[], conditionFn: ConditionFn): INode[] {
       const filteredChildren = filterNodes(node.children, conditionFn);
 
       if (filteredChildren.length) {
-        filteredNodes.push({ ...node, children: filteredChildren });
+        const isExists = filteredNodes.some(n => n.id === node.id);
+        if (!isExists) filteredNodes.push({ ...node, children: filteredChildren });
       }
     }
   });
