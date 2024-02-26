@@ -198,7 +198,7 @@ async function filter(conditionFn: ConditionFn<T>) {
   }
 
   resetFilter();
-  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, conditionFn);
+  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, idKey.value, conditionFn);
   expandAll();
 }
 

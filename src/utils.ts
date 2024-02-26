@@ -80,7 +80,7 @@ export function getAllNodesValuesUnique<T, V = unknown>(
   return set;
 }
 
-export function filterNodes<T>(nodes: T[], childrenKey: keyof T, conditionFn: ConditionFn<T>): T[] {
+export function filterNodes<T>(nodes: T[], childrenKey: keyof T, idKey: keyof T, conditionFn: ConditionFn<T>): T[] {
   const filteredNodes: T[] = [];
 
   nodes.forEach(node => {
@@ -91,10 +91,10 @@ export function filterNodes<T>(nodes: T[], childrenKey: keyof T, conditionFn: Co
     const children = getNodeChildren(node, childrenKey);
 
     if (children?.length) {
-      const filteredChildren = filterNodes(children, childrenKey, conditionFn);
+      const filteredChildren = filterNodes(children, childrenKey, idKey, conditionFn);
 
       if (filteredChildren.length) {
-        const isExists = filteredNodes.some(n => n.id === node.id);
+        const isExists = filteredNodes.some(n => n[idKey] === node[idKey]);
         if (!isExists) filteredNodes.push({ ...node, children: filteredChildren });
       }
     }

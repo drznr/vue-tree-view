@@ -2,23 +2,22 @@ import { mount, type ComponentMountingOptions, flushPromises } from '@vue/test-u
 import treeView from './tree-view.vue';
 import { ANIMALS_TREE } from './__mocks__/animals';
 import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
-import { type TestWrapper } from '../vitest.setup';
 import { TREE_NODE_TEST_ID } from './components/tree-node.vue';
 
 type MountFnOptions = ComponentMountingOptions<typeof treeView>;
 
 describe('<tree-view />', () => {
+  type TNode = typeof ANIMALS_TREE;
   const OPTIONS: MountFnOptions = {
     props: {
       nodes: ANIMALS_TREE,
     },
   };
   const mountComponent = (options: MountFnOptions = {}) => {
-    return mount(treeView, {
+    return mount<typeof treeView>(treeView, {
       ...OPTIONS,
       ...options,
-      // @ts-expect-error TODO: pass the generic to typeof treeView
-    }) as unknown as TestWrapper<typeof treeView>;
+    });
   };
 
   describe('Expanding', () => {
@@ -104,8 +103,7 @@ describe('<tree-view />', () => {
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      // TODO: pass the generic to typeof treeView and remove type
-      wrapper.vm.search((node: typeof ANIMALS_TREE) => !!node.name?.includes('lizard'));
+      wrapper.vm.search((node: TNode) => !!node.name?.includes('lizard'));
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
@@ -146,7 +144,7 @@ describe('<tree-view />', () => {
         props: {
           nodes: [ANIMALS_TREE],
           modelValue: [],
-          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+          'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
         },
         slots: {
           controls: '',
@@ -182,7 +180,7 @@ describe('<tree-view />', () => {
           nodes: [ANIMALS_TREE],
           defaultExpandAll: true,
           modelValue: [],
-          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+          'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
         },
         slots: {
           controls: '',
@@ -216,7 +214,7 @@ describe('<tree-view />', () => {
         props: {
           nodes: [ANIMALS_TREE],
           modelValue: [],
-          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+          'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
         },
       });
 
@@ -231,7 +229,7 @@ describe('<tree-view />', () => {
         props: {
           nodes: [ANIMALS_TREE],
           modelValue: ALL_LEAFS_IDS,
-          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+          'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
         },
       });
 
@@ -246,7 +244,7 @@ describe('<tree-view />', () => {
         props: {
           nodes: [ANIMALS_TREE],
           modelValue: [],
-          'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+          'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
         },
         slots: {
           controls: '',
@@ -305,8 +303,7 @@ describe('<tree-view />', () => {
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      // TODO: pass the generic to typeof treeView and remove type
-      wrapper.vm.filter((node: typeof ANIMALS_TREE) => node.name === 'Baboon');
+      wrapper.vm.filter((node: TNode) => node.name === 'Baboon');
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
@@ -317,8 +314,7 @@ describe('<tree-view />', () => {
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-      // TODO: pass the generic to typeof treeView and remove type
-      wrapper.vm.filter((node: typeof ANIMALS_TREE) => node.name === 'Baboon');
+      wrapper.vm.filter((node: TNode) => node.name === 'Baboon');
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
@@ -331,6 +327,7 @@ describe('<tree-view />', () => {
   });
 
   describe('Async | fetchChildren()', () => {
+    type TNode = typeof ASYNC_TREE;
     const ASYNC_OPTIONS: MountFnOptions = {
       props: {
         nodes: ASYNC_TREE,
@@ -460,8 +457,7 @@ describe('<tree-view />', () => {
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        // TODO: pass the generic to typeof treeView and remove type
-        await wrapper.vm.search((node: typeof ASYNC_TREE) => node.id === '1.1.1.1.1');
+        await wrapper.vm.search((node: TNode) => node.id === '1.1.1.1.1');
         await wrapper.vm.$nextTick();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(12);
@@ -554,7 +550,7 @@ describe('<tree-view />', () => {
             ...ASYNC_OPTIONS.props,
             nodes: [ASYNC_TREE],
             modelValue: [],
-            'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
           },
           slots: {
             controls: '',
@@ -593,7 +589,7 @@ describe('<tree-view />', () => {
             nodes: [ASYNC_TREE],
             defaultExpandAll: true,
             modelValue: [],
-            'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
           },
           slots: {
             controls: '',
@@ -630,7 +626,7 @@ describe('<tree-view />', () => {
             ...ASYNC_OPTIONS.props,
             nodes: [ASYNC_TREE],
             modelValue: [],
-            'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
           },
         });
 
@@ -646,7 +642,7 @@ describe('<tree-view />', () => {
             ...ASYNC_OPTIONS.props,
             nodes: [ASYNC_TREE],
             modelValue: ALL_LEAFS_IDS,
-            'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
           },
         });
 
@@ -662,7 +658,7 @@ describe('<tree-view />', () => {
             ...ASYNC_OPTIONS.props,
             nodes: [ASYNC_TREE],
             modelValue: [],
-            'onUpdate:modelValue': value => wrapper.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
           },
           slots: {
             controls: '',
@@ -723,8 +719,7 @@ describe('<tree-view />', () => {
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        // TODO: pass the generic to typeof treeView and remove type
-        await wrapper.vm.filter((node: typeof ASYNC_TREE) => node.id === '1.1.1.1.1');
+        await wrapper.vm.filter((node: TNode) => node.id === '1.1.1.1.1');
 
         await flushPromises();
 
@@ -736,8 +731,7 @@ describe('<tree-view />', () => {
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        // TODO: pass the generic to typeof treeView and remove type
-        await wrapper.vm.filter((node: typeof ASYNC_TREE) => node.id === '1.1.1.1.1');
+        await wrapper.vm.filter((node: TNode) => node.id === '1.1.1.1.1');
         await flushPromises();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);

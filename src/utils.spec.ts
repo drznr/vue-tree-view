@@ -12,11 +12,14 @@ import {
 } from './utils';
 
 describe('Tree View Utils', () => {
+  const CHILDREN_KEY = 'children';
+  const ID_KEY = 'id';
+
   describe('traverse()', () => {
     const handlerSpy = vi.fn();
 
     it('should run given handler for all tree nodes', () => {
-      traverse(ANIMALS_TREE, 'children', handlerSpy);
+      traverse(ANIMALS_TREE, CHILDREN_KEY, handlerSpy);
 
       expect(handlerSpy).toHaveBeenCalledTimes(19);
       expect(handlerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: '1' }), 0);
@@ -28,7 +31,7 @@ describe('Tree View Utils', () => {
     const handlerSpy = vi.fn();
 
     it('should run given handler for all tree nodes', async () => {
-      await traverseAsync(ANIMALS_TREE, 'children', handlerSpy);
+      await traverseAsync(ANIMALS_TREE, CHILDREN_KEY, handlerSpy);
 
       expect(handlerSpy).toHaveBeenCalledTimes(19);
       expect(handlerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: '1' }), 0);
@@ -66,7 +69,7 @@ describe('Tree View Utils', () => {
 
   describe('getAllNodesValuesUnique()', () => {
     it('should collect all node ids to a set', () => {
-      expect(getAllNodesValuesUnique(ANIMALS_TREE, 'children', 'id')).toEqual(
+      expect(getAllNodesValuesUnique(ANIMALS_TREE, CHILDREN_KEY, ID_KEY)).toEqual(
         new Set([
           '1',
           '10001',
@@ -92,7 +95,7 @@ describe('Tree View Utils', () => {
     });
 
     it('should collect all node ids after condition fn filtering to a set', () => {
-      expect(getAllNodesValuesUnique(ANIMALS_TREE, 'children', 'id', node => !node.children)).toEqual(
+      expect(getAllNodesValuesUnique(ANIMALS_TREE, CHILDREN_KEY, ID_KEY, node => !node.children)).toEqual(
         new Set(['10001', '10002', '10003', '10004', '10005', '10006', '10007', '10008', '10009', '10010', '10011'])
       );
     });
@@ -100,43 +103,43 @@ describe('Tree View Utils', () => {
 
   describe('traverseAndCheck()', () => {
     it('should return true if one node meet given condition fn', () => {
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.id === '1')).toBe(true);
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.id === '10006')).toBe(true);
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.name === 'Leopard')).toBe(true);
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.id === '102')).toBe(true);
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.id === '1003')).toBe(true);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.id === '1')).toBe(true);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.id === '10006')).toBe(true);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.name === 'Leopard')).toBe(true);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.id === '102')).toBe(true);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.id === '1003')).toBe(true);
     });
 
     it('should return false if any node does not meet given condition fn', () => {
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.id === '100066')).toBe(false);
-      expect(traverseAndCheck(ANIMALS_TREE, 'children', node => node.name === 'Mouse')).toBe(false);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.id === '100066')).toBe(false);
+      expect(traverseAndCheck(ANIMALS_TREE, CHILDREN_KEY, node => node.name === 'Mouse')).toBe(false);
     });
   });
 
   describe('traverseAndCheckAll()', () => {
     it('should return true if all nodes meet given condition fn', () => {
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => typeof node.id === 'string')).toBe(true);
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => !!node.name)).toBe(true);
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => !node.children || !!node.children.length)).toBe(
+      expect(traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => typeof node.id === 'string')).toBe(true);
+      expect(traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => !!node.name)).toBe(true);
+      expect(traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => !node.children || !!node.children.length)).toBe(
         true
       );
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => !!node.children?.length || +node.id > 10_000)).toBe(
-        true
-      );
+      expect(
+        traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => !!node.children?.length || +node.id > 10_000)
+      ).toBe(true);
     });
 
     it('should return false if any node does not meet given condition fn', () => {
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => node.id === '10006')).toBe(false);
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => !!node.children?.length)).toBe(false);
-      expect(traverseAndCheckAll(ANIMALS_TREE, 'children', node => !!node.children?.length && +node.id > 10_000)).toBe(
-        false
-      );
+      expect(traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => node.id === '10006')).toBe(false);
+      expect(traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => !!node.children?.length)).toBe(false);
+      expect(
+        traverseAndCheckAll(ANIMALS_TREE, CHILDREN_KEY, node => !!node.children?.length && +node.id > 10_000)
+      ).toBe(false);
     });
   });
 
   describe('filterNodes()', () => {
     it('should return filtered nodes that meet condition fn', () => {
-      expect(filterNodes([ANIMALS_TREE], 'children', node => node.name === 'Flying lizard')).toEqual([
+      expect(filterNodes([ANIMALS_TREE], CHILDREN_KEY, ID_KEY, node => node.name === 'Flying lizard')).toEqual([
         {
           id: '1',
           name: 'Animals',
@@ -161,7 +164,9 @@ describe('Tree View Utils', () => {
         },
       ]);
 
-      expect(filterNodes([ANIMALS_TREE], node => !!node.name?.toLowerCase().includes('iguana'))).toEqual([
+      expect(
+        filterNodes([ANIMALS_TREE], CHILDREN_KEY, ID_KEY, node => !!node.name?.toLowerCase().includes('iguana'))
+      ).toEqual([
         {
           id: '1',
           name: 'Animals',
@@ -186,7 +191,7 @@ describe('Tree View Utils', () => {
         },
       ]);
 
-      expect(filterNodes([ANIMALS_TREE], node => node.name?.split(' ').length === 3)).toEqual([
+      expect(filterNodes([ANIMALS_TREE], CHILDREN_KEY, ID_KEY, node => node.name?.split(' ').length === 3)).toEqual([
         {
           id: '1',
           name: 'Animals',
@@ -227,37 +232,37 @@ describe('Tree View Utils', () => {
     });
 
     it('should return null if no nodes meet condition fn', () => {
-      expect(filterNodes([ANIMALS_TREE], 'children', node => node.name === 'MISSING VALUE')).toEqual([]);
+      expect(filterNodes([ANIMALS_TREE], CHILDREN_KEY, ID_KEY, node => node.name === 'MISSING VALUE')).toEqual([]);
     });
   });
 
   describe('getNodeChildren()', () => {
     it('should return valid children from object', () => {
-      expect(getNodeChildren({ children: undefined }, 'children')).toBeUndefined();
+      expect(getNodeChildren({ children: undefined }, CHILDREN_KEY)).toBeUndefined();
       expect(getNodeChildren({ custom: [] }, 'custom')).toEqual([]);
-      expect(getNodeChildren({ children: [1, 2, 3], other: 1 }, 'children')).toEqual([1, 2, 3]);
+      expect(getNodeChildren({ children: [1, 2, 3], other: 1 }, CHILDREN_KEY)).toEqual([1, 2, 3]);
     });
 
     it('should throw an error if children are not valid', async () => {
-      await expect(async () => getNodeChildren({ children: null }, 'children')).rejects.toThrowError();
+      await expect(async () => getNodeChildren({ children: null }, CHILDREN_KEY)).rejects.toThrowError();
       await expect(async () => getNodeChildren({ custom: { children: [] } }, 'custom')).rejects.toThrowError();
-      await expect(async () => getNodeChildren({ children: 2, other: [] }, 'children')).rejects.toThrowError();
-      await expect(async () => getNodeChildren({ children: '' }, 'children')).rejects.toThrowError();
+      await expect(async () => getNodeChildren({ children: 2, other: [] }, CHILDREN_KEY)).rejects.toThrowError();
+      await expect(async () => getNodeChildren({ children: '' }, CHILDREN_KEY)).rejects.toThrowError();
     });
   });
 
   describe('getNodeId()', () => {
     it('should return valid id from object', () => {
-      expect(getNodeId({ id: '1' }, 'id')).toBe('1');
+      expect(getNodeId({ id: '1' }, ID_KEY)).toBe('1');
       expect(getNodeId({ custom: '123' }, 'custom')).toBe('123');
-      expect(getNodeId({ id: '321', other: 1 }, 'id')).toBe('321');
+      expect(getNodeId({ id: '321', other: 1 }, ID_KEY)).toBe('321');
     });
 
     it('should throw an error if id is not valid', async () => {
-      await expect(async () => getNodeId({ id: null }, 'id')).rejects.toThrowError();
+      await expect(async () => getNodeId({ id: null }, ID_KEY)).rejects.toThrowError();
       await expect(async () => getNodeId({ custom: { id: [] } }, 'custom')).rejects.toThrowError();
-      await expect(async () => getNodeId({ id: 2, other: [] }, 'id')).rejects.toThrowError();
-      await expect(async () => getNodeId({ id: undefined }, 'id')).rejects.toThrowError();
+      await expect(async () => getNodeId({ id: 2, other: [] }, ID_KEY)).rejects.toThrowError();
+      await expect(async () => getNodeId({ id: undefined }, ID_KEY)).rejects.toThrowError();
     });
   });
 });
