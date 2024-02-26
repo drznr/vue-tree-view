@@ -161,7 +161,32 @@ describe('Tree View Utils', () => {
         },
       ]);
 
-      expect(filterNodes([ANIMALS_TREE], 'children', node => node.name?.split(' ').length === 3)).toEqual([
+      expect(filterNodes([ANIMALS_TREE], node => !!node.name?.toLowerCase().includes('iguana'))).toEqual([
+        {
+          id: '1',
+          name: 'Animals',
+          children: [
+            {
+              id: '102',
+              name: 'Reptiles',
+              children: [
+                {
+                  id: '1004',
+                  name: 'Iguanas',
+                  children: [
+                    {
+                      id: '10008',
+                      name: 'Green iguana',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+
+      expect(filterNodes([ANIMALS_TREE], node => node.name?.split(' ').length === 3)).toEqual([
         {
           id: '1',
           name: 'Animals',
