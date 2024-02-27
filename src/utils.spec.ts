@@ -1,4 +1,5 @@
 import { ANIMALS_TREE } from './__mocks__/animals';
+import { CUSTOM_DATA_ANIMALS_TREE } from './__mocks__/custom-data';
 import {
   debounce,
   traverse,
@@ -69,29 +70,30 @@ describe('Tree View Utils', () => {
 
   describe('getAllNodesValuesUnique()', () => {
     it('should collect all node ids to a set', () => {
-      expect(getAllNodesValuesUnique(ANIMALS_TREE, CHILDREN_KEY, ID_KEY)).toEqual(
-        new Set([
-          '1',
-          '10001',
-          '10002',
-          '10003',
-          '10004',
-          '10005',
-          '10006',
-          '10007',
-          '10008',
-          '10009',
-          '1001',
-          '10010',
-          '10011',
-          '1002',
-          '1003',
-          '1004',
-          '1005',
-          '101',
-          '102',
-        ])
-      );
+      const ALL_IDS = new Set([
+        '1',
+        '10001',
+        '10002',
+        '10003',
+        '10004',
+        '10005',
+        '10006',
+        '10007',
+        '10008',
+        '10009',
+        '1001',
+        '10010',
+        '10011',
+        '1002',
+        '1003',
+        '1004',
+        '1005',
+        '101',
+        '102',
+      ]);
+
+      expect(getAllNodesValuesUnique(ANIMALS_TREE, CHILDREN_KEY, ID_KEY)).toEqual(ALL_IDS);
+      expect(getAllNodesValuesUnique(CUSTOM_DATA_ANIMALS_TREE, 'childs', '_id')).toEqual(ALL_IDS);
     });
 
     it('should collect all node ids after condition fn filtering to a set', () => {
@@ -182,6 +184,49 @@ describe('Tree View Utils', () => {
                     {
                       id: '10008',
                       name: 'Green iguana',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+
+      expect(
+        filterNodes([CUSTOM_DATA_ANIMALS_TREE], 'childs', '_id', node => !!node.label?.toLowerCase().includes('iguana'))
+      ).toEqual([
+        {
+          _id: '1',
+          label: 'Animals',
+          meta: {
+            age: 47,
+            desc: 'some other text',
+          },
+          childs: [
+            {
+              _id: '102',
+              label: 'Reptiles',
+              meta: {
+                age: 47,
+                desc: 'some other text',
+              },
+              childs: [
+                {
+                  _id: '1004',
+                  label: 'Iguanas',
+                  meta: {
+                    age: 47,
+                    desc: 'some other text',
+                  },
+                  childs: [
+                    {
+                      _id: '10008',
+                      label: 'Green iguana',
+                      meta: {
+                        age: 47,
+                        desc: 'some other text',
+                      },
                     },
                   ],
                 },

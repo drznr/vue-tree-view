@@ -95,7 +95,7 @@ export function filterNodes<T>(nodes: T[], childrenKey: keyof T, idKey: keyof T,
 
       if (filteredChildren.length) {
         const isExists = filteredNodes.some(n => n[idKey] === node[idKey]);
-        if (!isExists) filteredNodes.push({ ...node, children: filteredChildren });
+        if (!isExists) filteredNodes.push({ ...node, [childrenKey]: filteredChildren });
       }
     }
   });
