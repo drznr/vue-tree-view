@@ -462,7 +462,6 @@ describe('<tree-view />', () => {
 });
 
 function testExpanding(options: MountFnOptions, allNodesCount: number, searchKey = 'name') {
-  type TNode = typeof options.props.nodes;
   const mountComponent = (o: MountFnOptions = {}) => mount<typeof treeView>(treeView, { ...options, ...o });
 
   it('should render root level by default', () => {
@@ -545,7 +544,7 @@ function testExpanding(options: MountFnOptions, allNodesCount: number, searchKey
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-    wrapper.vm.search((node: TNode) => !!node[searchKey]?.includes('lizard'));
+    wrapper.vm.search({ key: searchKey, term: 'lizard' });
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
@@ -728,7 +727,6 @@ function testSelection(options: MountFnOptions, allLeafIds: string[]) {
 }
 
 function testFiltering(options: MountFnOptions, searchKey = 'name') {
-  type TNode = typeof options.props.node;
   const mountComponent = (o: MountFnOptions = {}) => mount<typeof treeView>(treeView, { ...options, ...o });
 
   it('should filter nodes by given condition fn | filter()', async () => {
@@ -736,7 +734,7 @@ function testFiltering(options: MountFnOptions, searchKey = 'name') {
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-    wrapper.vm.filter((node: TNode) => node[searchKey] === 'Baboon');
+    wrapper.vm.filter({ key: searchKey, term: 'baboo' });
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);
@@ -747,7 +745,7 @@ function testFiltering(options: MountFnOptions, searchKey = 'name') {
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-    wrapper.vm.filter((node: TNode) => node[searchKey] === 'Baboon');
+    wrapper.vm.filter({ key: searchKey, term: 'baboo' });
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(4);

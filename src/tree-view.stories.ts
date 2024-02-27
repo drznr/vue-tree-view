@@ -89,8 +89,8 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
                           const { value } = ev.target;
                           if (!value) return collapseAll();
     
-                          search(node => !!node.${textKey}?.toLowerCase().includes(value.toLowerCase()));
-                          }
+                          search({ key: '${textKey}', term: value });
+                        }
                       "
                   />
               </span>
@@ -105,7 +105,7 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
                               const { value } = ev.target;
                               if (!value) return resetFilter();
     
-                              filter(node => !!node.${textKey}?.toLowerCase().includes(value.toLowerCase()));
+                              filter({ key: '${textKey}', term: value });
                           }
                       "
                   />

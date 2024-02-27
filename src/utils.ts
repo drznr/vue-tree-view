@@ -1,4 +1,4 @@
-import type { ConditionFn } from './types';
+import { isQueryByKey, type ConditionFn, type TQueryBy } from './types';
 
 export function traverse<T>(node: T, childrenKey: keyof T, handler: (node: T, depth: number) => void, depth = 0) {
   handler(node, depth);
@@ -80,18 +80,19 @@ export function getAllNodesValuesUnique<T, V = unknown>(
   return set;
 }
 
-export function filterNodes<T>(nodes: T[], childrenKey: keyof T, idKey: keyof T, conditionFn: ConditionFn<T>): T[] {
+export function filterNodes<T>(nodes: T[], childrenKey: keyof T, idKey: keyof T, query: TQueryBy<T>): T[] {
   const filteredNodes: T[] = [];
 
   nodes.forEach(node => {
-    if (conditionFn(node)) {
+    const isMatch = isQueryByKey(query) ? searchInNode(node, query.key, query.term) : query(node);
+    if (isMatch) {
       filteredNodes.push({ ...node });
     }
 
     const children = getNodeChildren(node, childrenKey);
 
     if (children?.length) {
-      const filteredChildren = filterNodes(children, childrenKey, idKey, conditionFn);
+      const filteredChildren = filterNodes(children, childrenKey, idKey, query);
 
       if (filteredChildren.length) {
         const isExists = filteredNodes.some(n => n[idKey] === node[idKey]);
@@ -121,4 +122,12 @@ export function getNodeId<T>(node: T, idKey: keyof T) {
   }
 
   return id;
+}
+
+export function searchInNode<T>(node: T, key: keyof T, term: string) {
+  try {
+    return Boolean((node[key] as string)?.toLowerCase().includes(term.toLowerCase()));
+  } catch {
+    return false;
+  }
 }

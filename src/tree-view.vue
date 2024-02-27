@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import { computed, ref, type Ref } from 'vue';
-import type { ConditionFn, AsyncVoidFunction } from './types';
+import { isQueryByKey, type TQueryBy, type AsyncVoidFunction } from './types';
 import treeNode from './components/tree-node.vue';
 import {
   debounce,
@@ -10,6 +10,7 @@ import {
   traverseAsync,
   getNodeChildren,
   getNodeId,
+  searchInNode,
 } from './utils';
 
 type TValue = T[keyof T] extends T[] ? TValue : never;
@@ -22,8 +23,8 @@ defineSlots<{
     unselectAll: VoidFunction;
     expandToSelection: VoidFunction;
     resetFilter: VoidFunction;
-    filter: (conditionFn: ConditionFn<T>) => void;
-    search: (conditionFn: ConditionFn<T>) => void;
+    filter: (query: TQueryBy<T>) => void;
+    search: (query: TQueryBy<T>) => void;
   }): unknown;
 
   ['node-content'](props: {
@@ -113,7 +114,7 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-async function search(conditionFn: ConditionFn<T>) {
+async function search(query: TQueryBy<T>) {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
@@ -123,7 +124,8 @@ async function search(conditionFn: ConditionFn<T>) {
   const handler = (node: T, depth: number) => {
     path[depth] = getNodeId(node, idKey.value);
 
-    if (conditionFn(node)) {
+    const isMatch = isQueryByKey(query) ? searchInNode(node, query.key, query.term) : query(node);
+    if (isMatch) {
       path.forEach(nodeId => {
         expandedNodes.value.add(nodeId);
       });
@@ -192,13 +194,13 @@ function expandToSelection() {
   nodesModel.value.forEach(node => traverse(node, childrenKey.value, handler));
 }
 
-async function filter(conditionFn: ConditionFn<T>) {
+async function filter(query: TQueryBy<T>) {
   if (props.fetchChildren) {
     await appendAllNodes();
   }
 
   resetFilter();
-  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, idKey.value, conditionFn);
+  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, idKey.value, query);
   expandAll();
 }
 
