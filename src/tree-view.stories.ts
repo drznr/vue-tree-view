@@ -114,7 +114,7 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
               <span class="font-sans" :title="model.join(', ')">{{ model.length }} Selected</span>
           </template>
     
-          <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection, fetching, error }">
+          <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelect, fetching, error }">
               <div class="flex flex-row items-center my-2" @click="toggleExpand">
               <svg v-if="fetching" class="me-4" width="16px" height="16px" viewBox="0 0 32 32">
                   <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
@@ -138,7 +138,7 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
                       type="checkbox"
                       :checked="selected"
                       :indeterminate="indeterminate"
-                      @change="ev => toggleSelection(!ev.target.checked)"
+                      @change="ev => toggleSelect(!ev.target.checked)"
                   />
               </span>
     

@@ -260,7 +260,7 @@ describe('<tree-view />', () => {
         '1.1.2.2.2',
       ];
 
-      it('should allow recursive selection of nodes | toggleSelection()', async () => {
+      it('should allow recursive selection of nodes | toggleSelect()', async () => {
         const wrapper = mountComponent({
           props: {
             ...ASYNC_OPTIONS.props,
@@ -271,8 +271,8 @@ describe('<tree-view />', () => {
           slots: {
             controls: '',
             'node-content': `
-              <template #node-content="{ toggleSelection }">
-                <input type="checkbox" @change="ev => toggleSelection(!ev.target.checked)" />
+              <template #node-content="{ toggleSelect }">
+                <input type="checkbox" @change="ev => toggleSelect(!ev.target.checked)" />
               </template>
             `,
           },
@@ -298,7 +298,7 @@ describe('<tree-view />', () => {
         expect(wrapper.props('modelValue')).toEqual([]);
       });
 
-      it('should allow selection of single nodes | toggleSelection()', async () => {
+      it('should allow selection of single nodes | toggleSelect()', async () => {
         const wrapper = mountComponent({
           props: {
             ...ASYNC_OPTIONS.props,
@@ -310,8 +310,8 @@ describe('<tree-view />', () => {
           slots: {
             controls: '',
             'node-content': `
-              <template #node-content="{ node, toggleSelection }">
-                <input type="checkbox" :class="node.name" @change="ev => toggleSelection(!ev.target.checked)" />
+              <template #node-content="{ node, toggleSelect }">
+                <input type="checkbox" :class="node.name" @change="ev => toggleSelect(!ev.target.checked)" />
               </template>
             `,
           },
@@ -379,8 +379,8 @@ describe('<tree-view />', () => {
           slots: {
             controls: '',
             'node-content': `
-              <template #node-content="{ toggleSelection, selected, indeterminate }">
-                <input type="checkbox" :class="'box_' + node.name" @change="ev => toggleSelection(!ev.target.checked)" />
+              <template #node-content="{ toggleSelect, selected, indeterminate }">
+                <input type="checkbox" :class="'box_' + node.name" @change="ev => toggleSelect(!ev.target.checked)" />
                 <span :class="node.name">
                   {{ selected ? 'SELECTED' : '' }}
                   {{ indeterminate ? 'INDETERMINATE' : '' }}
@@ -568,7 +568,7 @@ function testExpanding(options: MountFnOptions, allNodesCount: number, searchKey
 function testSelection(options: MountFnOptions, allLeafIds: string[]) {
   const mountComponent = (o: MountFnOptions = {}) => mount<typeof treeView>(treeView, { ...options, ...o });
 
-  it('should allow recursive selection of nodes | toggleSelection()', async () => {
+  it('should allow recursive selection of nodes | toggleSelect()', async () => {
     const wrapper = mountComponent({
       props: {
         nodes: [ANIMALS_TREE],
@@ -578,8 +578,8 @@ function testSelection(options: MountFnOptions, allLeafIds: string[]) {
       slots: {
         controls: '',
         'node-content': `
-              <template #node-content="{ toggleSelection }">
-                <input type="checkbox" @change="ev => toggleSelection(!ev.target.checked)" />
+              <template #node-content="{ toggleSelect }">
+                <input type="checkbox" @change="ev => toggleSelect(!ev.target.checked)" />
               </template>
             `,
       },
@@ -603,7 +603,7 @@ function testSelection(options: MountFnOptions, allLeafIds: string[]) {
     expect(wrapper.props('modelValue')).toEqual([]);
   });
 
-  it('should allow selection of single nodes | toggleSelection()', async () => {
+  it('should allow selection of single nodes | toggleSelect()', async () => {
     const wrapper = mountComponent({
       props: {
         nodes: [ANIMALS_TREE],
@@ -614,8 +614,8 @@ function testSelection(options: MountFnOptions, allLeafIds: string[]) {
       slots: {
         controls: '',
         'node-content': `
-              <template #node-content="{ node, toggleSelection }">
-                <input type="checkbox" :class="node.name" @change="ev => toggleSelection(!ev.target.checked)" />
+              <template #node-content="{ node, toggleSelect }">
+                <input type="checkbox" :class="node.name" @change="ev => toggleSelect(!ev.target.checked)" />
               </template>
             `,
       },
@@ -678,8 +678,8 @@ function testSelection(options: MountFnOptions, allLeafIds: string[]) {
       slots: {
         controls: '',
         'node-content': `
-              <template #node-content="{ toggleSelection, selected, indeterminate }">
-                <input type="checkbox" :class="'box_' + node.name" @change="ev => toggleSelection(!ev.target.checked)" />
+              <template #node-content="{ toggleSelect, selected, indeterminate }">
+                <input type="checkbox" :class="'box_' + node.name" @change="ev => toggleSelect(!ev.target.checked)" />
                 <span :class="node.name">
                   {{ selected ? 'SELECTED' : '' }}
                   {{ indeterminate ? 'INDETERMINATE' : '' }}

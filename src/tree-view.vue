@@ -39,8 +39,8 @@ defineSlots<{
     fetching: boolean;
     error: boolean;
     toggleExpand: VoidFunction;
-    toggleSelection: (isUnselect: boolean) => void;
-    asyncToggleSelection: (isUnselect: boolean) => Promise<void>;
+    toggleSelect: (isUnselect: boolean) => void;
+    asyncToggleSelect: (isUnselect: boolean) => Promise<void>;
   }): unknown;
 }>();
 
@@ -77,7 +77,7 @@ defineExpose({
   unselectAll,
   asyncExpandAll,
   asyncSelectAll,
-  asyncToggleSelection,
+  asyncToggleSelect,
   asyncSearch,
   asyncFilter,
 });
@@ -139,7 +139,7 @@ function search(query: TQueryBy<TNode>) {
   nodesModel.value.forEach(node => traverse(node, childrenKey.value, handler));
 }
 
-function toggleSelection(baseNode: TNode, isUnselect: boolean) {
+function toggleSelect(baseNode: TNode, isUnselect: boolean) {
   const handler = (node: TNode) => {
     if (getNodeChildren(node, childrenKey.value)?.length) return;
 
@@ -255,9 +255,9 @@ async function asyncSearch(getMatchedPaths: () => Promise<string[]>) {
   expandAll();
 }
 
-async function asyncToggleSelection(baseNode: TNode, isUnselect: boolean) {
+async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
   await traverseAsync(baseNode, childrenKey.value, appendChildrenToNode);
-  toggleSelection(baseNode, isUnselect);
+  toggleSelect(baseNode, isUnselect);
 }
 
 async function appendAllNodes() {
@@ -308,8 +308,8 @@ const debounceFitler = debounce(filter, props.debounceMs);
           :fetching="!!nodeIdIsHttpStateMap.get(getNodeId(scope.node, idKey))?.fetching"
           :error="!!nodeIdIsHttpStateMap.get(getNodeId(scope.node, idKey))?.error"
           :toggle-expand="() => toggleExpand(scope.node)"
-          :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
-          :async-toggle-selection="(isUnselect: boolean) => asyncToggleSelection(scope.node, isUnselect)"
+          :toggle-select="(isUnselect: boolean) => toggleSelect(scope.node, isUnselect)"
+          :async-toggle-select="(isUnselect: boolean) => asyncToggleSelect(scope.node, isUnselect)"
         />
       </template>
     </tree-node>
