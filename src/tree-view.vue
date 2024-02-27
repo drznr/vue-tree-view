@@ -27,7 +27,7 @@ defineSlots<{
     search: (query: TQueryBy<TNode>) => void;
     asyncExpandAll: () => Promise<void>;
     asyncSelectAll: () => Promise<void>;
-    asyncSearch: (getMatchedPaths: () => Promise<string[]>) => Promise<void>;
+    asyncSearch: (getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) => Promise<void>;
     asyncFilter: (getFilteredNodes: () => Promise<TNode[]>) => Promise<void>;
   }): unknown;
 
@@ -248,11 +248,11 @@ async function asyncFilter(getFilteredNodes: () => Promise<TNode[]>) {
   expandAll();
 }
 
-async function asyncSearch(getMatchedPaths: () => Promise<string[]>) {
+async function asyncSearch(getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) {
   resetFilter();
-  const paths = await getMatchedPaths();
+  const { nodes, paths } = await getMatchedNodes();
+  nodesModel.value = nodes;
   expandedNodes.value = new Set(paths);
-  expandAll();
 }
 
 async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {

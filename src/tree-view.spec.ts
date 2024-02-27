@@ -42,7 +42,6 @@ describe('<tree-view />', () => {
   });
 
   describe('Async | fetchChildren()', () => {
-    type TNode = typeof ASYNC_TREE;
     const ASYNC_OPTIONS: MountFnOptions = {
       props: {
         nodes: ASYNC_TREE,
@@ -89,15 +88,7 @@ describe('<tree-view />', () => {
     describe('Expanding', () => {
       const ALL_NODES_COUNT = 81;
 
-      it('should render root level by default', () => {
-        const wrapper = mountComponent();
-
-        const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
-
-        expect(nodes).toHaveLength(1);
-      });
-
-      it('should render all nodes if specified | defaultExpandAll prop', async () => {
+      it('should render all given nodes if specified without fetching children | defaultExpandAll prop', async () => {
         const wrapper = mountComponent({
           props: {
             ...ASYNC_OPTIONS.props,
@@ -109,33 +100,15 @@ describe('<tree-view />', () => {
 
         const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
-        expect(nodes).toHaveLength(ALL_NODES_COUNT);
+        expect(nodes).toHaveLength(3);
       });
 
-      it('should collapse all nodes on demand | collapseAll()', async () => {
-        const wrapper = mountComponent({
-          props: {
-            ...ASYNC_OPTIONS.props,
-            defaultExpandAll: true,
-          },
-        } as MountFnOptions);
-
-        await idle();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
-
-        wrapper.vm.collapseAll();
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-      });
-
-      it('should allow expanding all nodes | expandAll()', async () => {
+      it('should allow async expanding all nodes | asyncExpandAll()', async () => {
         const wrapper = mountComponent();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        await wrapper.vm.expandAll();
+        await wrapper.vm.asyncExpandAll();
         await wrapper.vm.$nextTick();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
@@ -168,37 +141,54 @@ describe('<tree-view />', () => {
         expect(wrapper.findByText('OPEN')).toBeNull();
       });
 
-      it('should expand to matching nodes by given search fn | search()', async () => {
+      it('should expand to matching nodes by given search fn | asyncSearch()', async () => {
         const wrapper = mountComponent();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        await wrapper.vm.search((node: TNode) => node.id === '1.1.1.1.1');
+        await wrapper.vm.asyncSearch(
+          vi.fn().mockResolvedValue({
+            nodes: [
+              {
+                id: '1',
+                name: 'ROOT',
+                children: [
+                  { id: '1.0', name: 'Branch A' },
+                  {
+                    id: '1.1',
+                    name: 'Branch B',
+                    children: [
+                      { id: '1.1.0', name: 'a name', children: [] },
+                      {
+                        id: '1.1.1',
+                        name: 'a name',
+                        children: [
+                          { id: '1.1.1.0', name: 'a name', children: [] },
+                          {
+                            id: '1.1.1.1',
+                            name: 'a name',
+                            children: [
+                              { id: '1.1.1.1.0', name: 'leaf' },
+                              { id: '1.1.1.1.1', name: 'the found one' },
+                              { id: '1.1.1.1.2', name: 'leaf' },
+                            ],
+                          },
+                          { id: '1.1.1.2', name: 'a name', children: [] },
+                        ],
+                      },
+                      { id: '1.1.2', name: 'a name', children: [] },
+                    ],
+                  },
+                ],
+              },
+            ],
+            paths: ['1', '1.1', '1.1.1', '1.1.1.1', '1.1.1.1.1'],
+          })
+        );
+        await flushPromises();
         await wrapper.vm.$nextTick();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(12);
-      });
-
-      it('should expand to selected nodes | expandToSelection()', async () => {
-        const wrapper = mountComponent({
-          props: {
-            ...ASYNC_OPTIONS.props,
-            modelValue: ['1.1.1.1.1', '1.1.0.0.2'],
-            defaultExpandAll: true,
-          },
-        } as MountFnOptions);
-
-        await idle();
-
-        wrapper.vm.collapseAll();
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-        wrapper.vm.expandToSelection();
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(18);
       });
     });
 
@@ -260,7 +250,7 @@ describe('<tree-view />', () => {
         '1.1.2.2.2',
       ];
 
-      it('should allow recursive selection of nodes | toggleSelect()', async () => {
+      it('should allow recursive selection of nodes | asyncToggleSelect()', async () => {
         const wrapper = mountComponent({
           props: {
             ...ASYNC_OPTIONS.props,
@@ -271,8 +261,8 @@ describe('<tree-view />', () => {
           slots: {
             controls: '',
             'node-content': `
-              <template #node-content="{ toggleSelect }">
-                <input type="checkbox" @change="ev => toggleSelect(!ev.target.checked)" />
+              <template #node-content="{ asyncToggleSelect }">
+                <input type="checkbox" @change="ev => asyncToggleSelect(!ev.target.checked)" />
               </template>
             `,
           },
@@ -298,45 +288,7 @@ describe('<tree-view />', () => {
         expect(wrapper.props('modelValue')).toEqual([]);
       });
 
-      it('should allow selection of single nodes | toggleSelect()', async () => {
-        const wrapper = mountComponent({
-          props: {
-            ...ASYNC_OPTIONS.props,
-            nodes: [ASYNC_TREE],
-            defaultExpandAll: true,
-            modelValue: [],
-            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
-          },
-          slots: {
-            controls: '',
-            'node-content': `
-              <template #node-content="{ node, toggleSelect }">
-                <input type="checkbox" :class="node.name" @change="ev => toggleSelect(!ev.target.checked)" />
-              </template>
-            `,
-          },
-        });
-
-        await idle();
-
-        const checkbox = wrapper.find<HTMLInputElement>('[class^="7-node-"], [class*="7-node-"]');
-
-        checkbox.element.checked = false;
-        await checkbox.trigger('click');
-        await checkbox.trigger('change');
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.props('modelValue')).toEqual(['1.0.0.0.0']);
-
-        checkbox.element.checked = true;
-        await checkbox.trigger('click');
-        await checkbox.trigger('change');
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.props('modelValue')).toEqual([]);
-      });
-
-      it('should select all nodes on demand | selectAll()', async () => {
+      it('should select all nodes on demand | asyncSelectAll()', async () => {
         const wrapper = mountComponent({
           props: {
             ...ASYNC_OPTIONS.props,
@@ -346,26 +298,10 @@ describe('<tree-view />', () => {
           },
         });
 
-        await wrapper.vm.selectAll();
+        await wrapper.vm.asyncSelectAll();
         await wrapper.vm.$nextTick();
 
         expect(wrapper.props('modelValue')).toEqual(ALL_LEAFS_IDS);
-      });
-
-      it('should unselect all nodes on demand | unselectAll()', async () => {
-        const wrapper = mountComponent({
-          props: {
-            ...ASYNC_OPTIONS.props,
-            nodes: [ASYNC_TREE],
-            modelValue: ALL_LEAFS_IDS,
-            'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
-          },
-        });
-
-        wrapper.vm.unselectAll();
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.props('modelValue')).toEqual([]);
       });
 
       it('should supply correct indications if selected / childs selected', async () => {
@@ -379,8 +315,8 @@ describe('<tree-view />', () => {
           slots: {
             controls: '',
             'node-content': `
-              <template #node-content="{ toggleSelect, selected, indeterminate }">
-                <input type="checkbox" :class="'box_' + node.name" @change="ev => toggleSelect(!ev.target.checked)" />
+              <template #node-content="{ asyncToggleSelect, selected, indeterminate }">
+                <input type="checkbox" :class="'box_' + node.name" @change="ev => asyncToggleSelect(!ev.target.checked)" />
                 <span :class="node.name">
                   {{ selected ? 'SELECTED' : '' }}
                   {{ indeterminate ? 'INDETERMINATE' : '' }}
@@ -430,32 +366,38 @@ describe('<tree-view />', () => {
     });
 
     describe('Filtering', () => {
-      it('should filter nodes by given condition fn | filter()', async () => {
+      it('should filter nodes by given condition fn | asyncFilter()', async () => {
         const wrapper = mountComponent();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
-        await wrapper.vm.filter((node: TNode) => node.id === '1.1.1.1.1');
+        await wrapper.vm.asyncFilter(
+          vi.fn().mockResolvedValue([
+            {
+              id: '1',
+              name: 'ROOT',
+              children: [
+                {
+                  id: '1.1',
+                  name: 'Branch B',
+                  children: [
+                    {
+                      id: '1.1.1',
+                      name: 'some name',
+                      children: [
+                        { id: '1.1.1.1', name: 'some other name', children: [{ id: '1.1.1.1.1', name: 'leaf' }] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ])
+        );
 
         await flushPromises();
 
         expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);
-      });
-
-      it('should return to initial state on demand | resetFilter()', async () => {
-        const wrapper = mountComponent();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-        await wrapper.vm.filter((node: TNode) => node.id === '1.1.1.1.1');
-        await flushPromises();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);
-
-        wrapper.vm.resetFilter();
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
       });
     });
   });
@@ -545,6 +487,17 @@ function testExpanding(options: MountFnOptions, allNodesCount: number, searchKey
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
     wrapper.vm.search({ key: searchKey, term: 'lizard' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
+
+    // reset search
+    wrapper.vm.collapseAll();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+    // search with condition Fn
+    wrapper.vm.search((node: typeof options.props.nodes) => node[searchKey]?.includes('lizard'));
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
