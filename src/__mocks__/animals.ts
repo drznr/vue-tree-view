@@ -1,6 +1,4 @@
-import type { INode } from '../types';
-
-export const ANIMALS_TREE: INode = {
+export const ANIMALS_TREE = {
   id: '1',
   name: 'Animals',
   children: [

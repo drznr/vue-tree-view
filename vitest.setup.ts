@@ -1,8 +1,4 @@
 import { config, type VueWrapper, DOMWrapper } from '@vue/test-utils';
-import type { DefinedComponent } from '@vue/test-utils/dist/types';
-
-export type TestWrapper<VM extends DefinedComponent> = VueWrapper<InstanceType<VM>> &
-  ReturnType<typeof customBehaviors>;
 
 const customBehaviors = (wrapper: VueWrapper) => ({
   findByText<T extends Element>(text: string, selector = '*'): DOMWrapper<T> | null {

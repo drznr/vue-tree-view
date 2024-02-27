@@ -1,6 +1,4 @@
-import type { INode } from 'src/types';
-
-export const ASYNC_TREE: INode = {
+export const ASYNC_TREE = {
   id: '1',
   name: 'ROOT',
   children: [
@@ -9,7 +7,7 @@ export const ASYNC_TREE: INode = {
   ],
 };
 
-export const getMockChildren = (nodeId: string, timeout = 300): Promise<INode[] | null> => {
+export const getMockChildren = (nodeId: string, timeout = 300) => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(
