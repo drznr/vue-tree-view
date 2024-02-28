@@ -15,7 +15,7 @@ const { model, updateModel, handleError } = useStorySetup();
         <template
           #controls="{ collapseAll, expandAll, search, expandToSelection, selectAll, unselectAll, filter, resetFilter }"
         >
-          <div class="d-flex align-center py-4 mb-4" :style="{ borderBottom: `1px solid ${colors.grey.lighten2}` }">
+          <div class="d-flex align-center pb-4 mb-4" :style="{ borderBottom: `1px solid ${colors.grey.lighten2}` }">
             <v-btn variant="outlined" class="btn mr-2" @click="expandAll"> Expand All </v-btn>
             <v-btn variant="outlined" class="btn mr-2" @click="collapseAll"> Collapse All </v-btn>
             <v-btn variant="outlined" class="btn mr-2" @click="selectAll"> Select All </v-btn>

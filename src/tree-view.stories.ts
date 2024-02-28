@@ -8,6 +8,7 @@ export default {
   title: 'Tree View',
   // TODO: a way to pass the generic to TreeView and remove assertion
   component: TreeView as unknown as Record<string, unknown>,
+  parameters: { options: { showPanel: false } },
   tags: ['autodocs'],
   // TODO: bind SB args | setup controls for stories
 } satisfies Meta<typeof TreeView>;
