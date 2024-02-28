@@ -1,4 +1,8 @@
 import '../src/output.css';
+import { setup } from '@storybook/vue3';
+import Vuetify from '../src/plugins/vuetify';
+
+setup(app => app.use(Vuetify));
 
 /** @type { import('@storybook/vue3').Preview } */
 const preview = {
