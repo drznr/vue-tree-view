@@ -4,7 +4,7 @@ import { ANIMALS_TREE } from './__mocks__/animals';
 import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
 import { CUSTOM_DATA_ANIMALS_TREE } from './__mocks__/custom-data';
-import AsyncStory from './stories/async.story.vue';
+import AsyncStory from './stories/async.stories.vue';
 
 export default {
   title: 'Tree View',
