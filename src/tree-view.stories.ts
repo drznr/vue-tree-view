@@ -11,7 +11,7 @@ export default {
   // TODO: a way to pass the generic to TreeView and remove assertion
   component: TreeView as unknown as Record<string, unknown>,
   tags: ['autodocs'],
-} satisfies Meta;
+} satisfies Meta<typeof TreeView>;
 
 type Story = StoryObj<typeof TreeView>;
 

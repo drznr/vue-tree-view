@@ -290,7 +290,7 @@ function testSelection(options: MountFnOptions, allLeafIds: string[], searchKey 
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
@@ -326,7 +326,7 @@ function testSelection(options: MountFnOptions, allLeafIds: string[], searchKey 
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         defaultExpandAll: true,
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
@@ -362,7 +362,7 @@ function testSelection(options: MountFnOptions, allLeafIds: string[], searchKey 
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
@@ -378,7 +378,7 @@ function testSelection(options: MountFnOptions, allLeafIds: string[], searchKey 
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: allLeafIds,
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
@@ -394,7 +394,7 @@ function testSelection(options: MountFnOptions, allLeafIds: string[], searchKey 
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
@@ -599,7 +599,7 @@ function testAsyncSelection(options: MountFnOptions, allLeafIds: string[], searc
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
@@ -637,7 +637,7 @@ function testAsyncSelection(options: MountFnOptions, allLeafIds: string[], searc
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
@@ -653,7 +653,7 @@ function testAsyncSelection(options: MountFnOptions, allLeafIds: string[], searc
     const wrapper = mountComponent({
       props: {
         ...options.props,
-        nodes: [options.props.nodes],
+        nodes: [options.props?.nodes],
         modelValue: [],
         'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
       },
