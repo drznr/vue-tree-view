@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryFn, StoryObj } from '@storybook/vue3';
 import TreeView from './tree-view.vue';
 import { ANIMALS_TREE } from './__mocks__/animals';
 import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
-import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
 import { CUSTOM_DATA_ANIMALS_TREE } from './__mocks__/custom-data';
+import AsyncStory from './stories/async.story.vue';
 
 export default {
   title: 'Tree View',
@@ -32,13 +32,7 @@ export const ATC: Story = {
   },
 };
 
-export const Async: Story = {
-  ...BaseTemplate,
-  args: {
-    nodes: ASYNC_TREE,
-    fetchChildren: getMockChildren,
-  },
-};
+export const Async: StoryFn = () => AsyncStory;
 
 export const CustomData: Story = {
   ...CustomTemplate,
