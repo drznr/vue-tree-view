@@ -7,7 +7,7 @@ export const ASYNC_TREE = {
   ],
 };
 
-export const getMockChildren = (nodeId: string, timeout = 300) => {
+export const getMockChildren = (nodeId: string, timeout = 300): Promise<(typeof ASYNC_TREE)[] | null> => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(
@@ -15,10 +15,13 @@ export const getMockChildren = (nodeId: string, timeout = 300) => {
           ? null
           : Array(3)
               .fill(null)
-              .map((_, i) => ({
-                id: nodeId + '.' + i,
-                name: nodeId.length + '-node-' + (Math.random() + 1).toString(36).substring(7),
-              }))
+              .map(
+                (_, i) =>
+                  ({
+                    id: nodeId + '.' + i,
+                    name: nodeId.length + '-node-' + (Math.random() + 1).toString(36).substring(7),
+                  }) as typeof ASYNC_TREE
+              )
       );
     }, timeout);
   });

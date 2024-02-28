@@ -10,6 +10,7 @@ import {
   traverseAsync,
   getNodeChildren,
   getNodeId,
+  searchInNode,
 } from './utils';
 
 describe('Tree View Utils', () => {
@@ -308,6 +309,27 @@ describe('Tree View Utils', () => {
       await expect(async () => getNodeId({ custom: { id: [] } }, 'custom')).rejects.toThrowError();
       await expect(async () => getNodeId({ id: 2, other: [] }, ID_KEY)).rejects.toThrowError();
       await expect(async () => getNodeId({ id: undefined }, ID_KEY)).rejects.toThrowError();
+    });
+  });
+
+  describe('searchInNode()', () => {
+    const MOCK_NODE = { name: 'Meshulam', age: 47 };
+    it('should return true if given term is found on node string value', () => {
+      expect(searchInNode(MOCK_NODE, 'name', 'shula')).toBe(true);
+      expect(searchInNode(MOCK_NODE, 'name', '')).toBe(true);
+      expect(searchInNode(MOCK_NODE, 'name', 'Meshulam')).toBe(true);
+    });
+
+    it('should return false if given term is not found on node string value', () => {
+      expect(searchInNode(MOCK_NODE, 'name', 'shuli')).toBe(false);
+      expect(searchInNode(MOCK_NODE, 'name', 'zz')).toBe(false);
+      expect(searchInNode(MOCK_NODE, 'name', 'Meshulams')).toBe(false);
+    });
+
+    it('should return false if given node value is not a string', () => {
+      expect(searchInNode(MOCK_NODE, 'age', '47')).toBe(false);
+      expect(searchInNode({ nums: [1, 2, 3] }, 'nums', '')).toBe(false);
+      expect(searchInNode({ a: 'string', b: null }, 'b', 'Meshulam')).toBe(false);
     });
   });
 });

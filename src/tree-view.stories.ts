@@ -1,17 +1,17 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryFn, StoryObj } from '@storybook/vue3';
 import TreeView from './tree-view.vue';
 import { ANIMALS_TREE } from './__mocks__/animals';
 import { ATC_TREE } from './__mocks__/atc';
 import { ref } from 'vue';
-import { ASYNC_TREE, getMockChildren } from './__mocks__/async';
 import { CUSTOM_DATA_ANIMALS_TREE } from './__mocks__/custom-data';
+import AsyncStory from './stories/async.story.vue';
 
 export default {
   title: 'Tree View',
   // TODO: a way to pass the generic to TreeView and remove assertion
   component: TreeView as unknown as Record<string, unknown>,
   tags: ['autodocs'],
-} satisfies Meta;
+} satisfies Meta<typeof TreeView>;
 
 type Story = StoryObj<typeof TreeView>;
 
@@ -32,13 +32,7 @@ export const ATC: Story = {
   },
 };
 
-export const Async: Story = {
-  ...BaseTemplate,
-  args: {
-    nodes: ASYNC_TREE,
-    fetchChildren: getMockChildren,
-  },
-};
+export const Async: StoryFn = () => AsyncStory;
 
 export const CustomData: Story = {
   ...CustomTemplate,
@@ -89,8 +83,8 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
                           const { value } = ev.target;
                           if (!value) return collapseAll();
     
-                          search(node => !!node.${textKey}?.toLowerCase().includes(value.toLowerCase()));
-                          }
+                          search({ key: '${textKey}', term: value });
+                        }
                       "
                   />
               </span>
@@ -105,7 +99,7 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
                               const { value } = ev.target;
                               if (!value) return resetFilter();
     
-                              filter(node => !!node.${textKey}?.toLowerCase().includes(value.toLowerCase()));
+                              filter({ key: '${textKey}', term: value });
                           }
                       "
                   />
@@ -114,7 +108,7 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
               <span class="font-sans" :title="model.join(', ')">{{ model.length }} Selected</span>
           </template>
     
-          <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelection, fetching, error }">
+          <template #node-content="{ node, expanded, selected, indeterminate, toggleExpand, toggleSelect, fetching, error }">
               <div class="flex flex-row items-center my-2" @click="toggleExpand">
               <svg v-if="fetching" class="me-4" width="16px" height="16px" viewBox="0 0 32 32">
                   <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF" />
@@ -138,7 +132,7 @@ function getBaseTemplate(textKey = 'name', idKey = 'id', childrenKey = 'children
                       type="checkbox"
                       :checked="selected"
                       :indeterminate="indeterminate"
-                      @change="ev => toggleSelection(!ev.target.checked)"
+                      @change="ev => toggleSelect(!ev.target.checked)"
                   />
               </span>
     

@@ -1,6 +1,6 @@
-<script setup lang="ts" generic="T">
+<script setup lang="ts" generic="TNode">
 import { computed, ref, type Ref } from 'vue';
-import type { ConditionFn, AsyncVoidFunction } from './types';
+import { isQueryByKey, type TQueryBy } from './types';
 import treeNode from './components/tree-node.vue';
 import {
   debounce,
@@ -10,46 +10,52 @@ import {
   traverseAsync,
   getNodeChildren,
   getNodeId,
+  searchInNode,
 } from './utils';
 
-type TValue = T[keyof T] extends T[] ? TValue : never;
+type TNodeValue = TNode[keyof TNode] extends TNode[] ? TNodeValue : never;
 
 defineSlots<{
   controls(props: {
-    expandAll: AsyncVoidFunction;
+    expandAll: VoidFunction;
     collapseAll: VoidFunction;
-    selectAll: AsyncVoidFunction;
+    selectAll: VoidFunction;
     unselectAll: VoidFunction;
     expandToSelection: VoidFunction;
     resetFilter: VoidFunction;
-    filter: (conditionFn: ConditionFn<T>) => void;
-    search: (conditionFn: ConditionFn<T>) => void;
+    filter: (query: TQueryBy<TNode>) => void;
+    search: (query: TQueryBy<TNode>) => void;
+    asyncExpandAll: () => Promise<void>;
+    asyncSelectAll: () => Promise<void>;
+    asyncSearch: (getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) => Promise<void>;
+    asyncFilter: (getFilteredNodes: () => Promise<TNode[]>) => Promise<void>;
   }): unknown;
 
   ['node-content'](props: {
-    node: T;
+    node: TNode;
     expanded: boolean;
     selected: boolean;
     indeterminate: boolean;
     fetching: boolean;
     error: boolean;
     toggleExpand: VoidFunction;
-    toggleSelection: (isUnselect: boolean) => void;
+    toggleSelect: (isUnselect: boolean) => void;
+    asyncToggleSelect: (isUnselect: boolean) => Promise<void>;
   }): unknown;
 }>();
 
 const props = withDefaults(
   defineProps<{
-    nodes: T | T[];
+    nodes: TNode | TNode[];
     modelValue?: string[];
     defaultExpandAll?: boolean;
-    idKey?: keyof T;
-    childrenKey?: keyof T;
+    idKey?: keyof TNode;
+    childrenKey?: keyof TNode;
     debounceMs?: number;
     transitionMs?: number;
     noTransition?: boolean;
     indentPx?: number;
-    fetchChildren?: (nodeId: string) => Promise<T[] | null | undefined>;
+    fetchChildren?: (nodeId: string) => Promise<TNode[] | null | undefined>;
   }>(),
   {
     modelValue: () => [],
@@ -69,25 +75,30 @@ defineExpose({
   resetFilter,
   selectAll,
   unselectAll,
+  asyncExpandAll,
+  asyncSelectAll,
+  asyncToggleSelect,
+  asyncSearch,
+  asyncFilter,
 });
 
 const emit = defineEmits<{ 'update:modelValue': [payload: string[]]; 'on-error': [error: Error] }>();
 
 const clone = structuredClone(props.nodes);
 const nodesCopy = Array.isArray(clone) ? clone : [clone];
-const nodesModel = ref<T[]>(nodesCopy) as Ref<T[]>;
+const nodesModel = ref<TNode[]>(nodesCopy) as Ref<TNode[]>;
 
 const expandedNodes = ref(new Set<string>());
 const selectedNodes = ref(new Set<string>(props.modelValue));
 
 const nodeIdIsHttpStateMap = ref(new Map<string, { fetching: boolean; error?: Error }>());
 
-const childrenKey = computed(() => (props.childrenKey ?? 'children') as keyof T);
-const idKey = computed(() => (props.idKey ?? 'id') as keyof T);
+const childrenKey = computed(() => (props.childrenKey ?? 'children') as keyof TNode);
+const idKey = computed(() => (props.idKey ?? 'id') as keyof TNode);
 
 if (props.defaultExpandAll) expandAll();
 
-function toggleExpand(node: T) {
+function toggleExpand(node: TNode) {
   if (!getNodeChildren(node, childrenKey.value)?.length) return;
 
   const nodeId = getNodeId(node, idKey.value);
@@ -96,11 +107,8 @@ function toggleExpand(node: T) {
   else expandedNodes.value.add(nodeId);
 }
 
-async function expandAll() {
-  if (props.fetchChildren) {
-    await appendAllNodes();
-  }
-  const allNodeIds = getAllNodesValuesUnique<T, string>(
+function expandAll() {
+  const allNodeIds = getAllNodesValuesUnique<TNode, string>(
     nodesModel.value,
     childrenKey.value,
     idKey.value,
@@ -113,17 +121,15 @@ function collapseAll() {
   expandedNodes.value.clear();
 }
 
-async function search(conditionFn: ConditionFn<T>) {
-  if (props.fetchChildren) {
-    await appendAllNodes();
-  }
+function search(query: TQueryBy<TNode>) {
   collapseAll();
 
   const path: string[] = [];
-  const handler = (node: T, depth: number) => {
+  const handler = (node: TNode, depth: number) => {
     path[depth] = getNodeId(node, idKey.value);
 
-    if (conditionFn(node)) {
+    const isMatch = isQueryByKey(query) ? searchInNode(node, query.key, query.term) : query(node);
+    if (isMatch) {
       path.forEach(nodeId => {
         expandedNodes.value.add(nodeId);
       });
@@ -133,12 +139,8 @@ async function search(conditionFn: ConditionFn<T>) {
   nodesModel.value.forEach(node => traverse(node, childrenKey.value, handler));
 }
 
-async function toggleSelection(baseNode: T, isUnselect: boolean) {
-  if (props.fetchChildren) {
-    await traverseAsync(baseNode, childrenKey.value, appendChildrenToNode);
-  }
-
-  const handler = (node: T) => {
+function toggleSelect(baseNode: TNode, isUnselect: boolean) {
+  const handler = (node: TNode) => {
     if (getNodeChildren(node, childrenKey.value)?.length) return;
 
     const nodeId = getNodeId(node, idKey.value);
@@ -152,12 +154,8 @@ async function toggleSelection(baseNode: T, isUnselect: boolean) {
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
-async function selectAll() {
-  if (props.fetchChildren) {
-    await appendAllNodes();
-  }
-
-  const allNodeIds = getAllNodesValuesUnique<T, string>(
+function selectAll() {
+  const allNodeIds = getAllNodesValuesUnique<TNode, string>(
     nodesModel.value,
     childrenKey.value,
     idKey.value,
@@ -178,7 +176,7 @@ function expandToSelection() {
   if (selectedNodes.value.size === 0) return;
 
   const path: string[] = [];
-  const handler = (node: T, depth: number) => {
+  const handler = (node: TNode, depth: number) => {
     const nodeId = getNodeId(node, idKey.value);
     path[depth] = nodeId;
 
@@ -192,13 +190,9 @@ function expandToSelection() {
   nodesModel.value.forEach(node => traverse(node, childrenKey.value, handler));
 }
 
-async function filter(conditionFn: ConditionFn<T>) {
-  if (props.fetchChildren) {
-    await appendAllNodes();
-  }
-
+function filter(query: TQueryBy<TNode>) {
   resetFilter();
-  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, idKey.value, conditionFn);
+  nodesModel.value = filterNodes(nodesModel.value, childrenKey.value, idKey.value, query);
   expandAll();
 }
 
@@ -207,7 +201,7 @@ function resetFilter() {
   collapseAll();
 }
 
-async function appendChildrenToNode(node: T) {
+async function appendChildrenToNode(node: TNode) {
   const nodeId = getNodeId(node, idKey.value);
   if (
     props.fetchChildren &&
@@ -226,7 +220,7 @@ async function appendChildrenToNode(node: T) {
       nodesModel.value.forEach(rootNode => {
         traverse(rootNode, childrenKey.value, currentNode => {
           if (getNodeId(currentNode, idKey.value) === nodeId) {
-            currentNode[childrenKey.value] = fetchedChildren as TValue;
+            currentNode[childrenKey.value] = fetchedChildren as TNodeValue;
           }
         });
       });
@@ -236,6 +230,34 @@ async function appendChildrenToNode(node: T) {
       nodeIdIsHttpStateMap.value.set(nodeId, { fetching: false, error });
     }
   }
+}
+
+async function asyncExpandAll() {
+  await appendAllNodes();
+  expandAll();
+}
+
+async function asyncSelectAll() {
+  await appendAllNodes();
+  selectAll();
+}
+
+async function asyncFilter(getFilteredNodes: () => Promise<TNode[]>) {
+  resetFilter();
+  nodesModel.value = await getFilteredNodes();
+  expandAll();
+}
+
+async function asyncSearch(getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) {
+  resetFilter();
+  const { nodes, paths } = await getMatchedNodes();
+  nodesModel.value = nodes;
+  expandedNodes.value = new Set(paths);
+}
+
+async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
+  await traverseAsync(baseNode, childrenKey.value, appendChildrenToNode);
+  toggleSelect(baseNode, isUnselect);
 }
 
 async function appendAllNodes() {
@@ -257,6 +279,10 @@ const debounceFitler = debounce(filter, props.debounceMs);
     :filter="debounceFitler"
     :reset-filter="resetFilter"
     :expand-to-selection="expandToSelection"
+    :async-expand-all="asyncExpandAll"
+    :async-select-all="asyncSelectAll"
+    :async-search="asyncSearch"
+    :async-filter="asyncFilter"
   />
   <ul>
     <tree-node
@@ -282,7 +308,8 @@ const debounceFitler = debounce(filter, props.debounceMs);
           :fetching="!!nodeIdIsHttpStateMap.get(getNodeId(scope.node, idKey))?.fetching"
           :error="!!nodeIdIsHttpStateMap.get(getNodeId(scope.node, idKey))?.error"
           :toggle-expand="() => toggleExpand(scope.node)"
-          :toggle-selection="(isUnselect: boolean) => toggleSelection(scope.node, isUnselect)"
+          :toggle-select="(isUnselect: boolean) => toggleSelect(scope.node, isUnselect)"
+          :async-toggle-select="(isUnselect: boolean) => asyncToggleSelect(scope.node, isUnselect)"
         />
       </template>
     </tree-node>
