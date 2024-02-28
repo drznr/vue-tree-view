@@ -35,7 +35,7 @@
     "format": "prettier --write",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "tailwind": "npx tailwindcss -i ./src/tailwind.css -o ./src/output.css --watch"
+    "tailwind": "npx tailwindcss -i ./src/stories/tailwind.css -o ./src/stories/output.css --watch"
   },
   "peerDependencies": {
     "vue": "^3.0.0"

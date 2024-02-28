@@ -1,4 +1,4 @@
-import '../src/output.css';
+import '../src/stories/output.css';
 import { setup } from '@storybook/vue3';
 import Vuetify from '../src/plugins/vuetify';
 
