@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue';
-import { filterNodes } from '../utils';
+import { filterNodes, traverseAsync } from '../utils';
 import type { TQueryBy } from '../types';
 import { useSelection } from './use-selection';
 import { useExpanding } from './use-expanding';
@@ -28,11 +28,10 @@ export function useTreeView<TNode>(
     selectedNodes.value
   );
 
-  const { nodeIdIsHttpStateMap, appendChildrenToNode, asyncToggleSelect } = useFetchChildren<TNode>(
+  const { nodeIdIsHttpStateMap, appendChildrenToNode } = useFetchChildren<TNode>(
     nodes.value,
     idKey,
     childrenKey,
-    toggleSelect,
     fetchChildren
   );
 
@@ -45,6 +44,11 @@ export function useTreeView<TNode>(
   function resetFilter() {
     nodes.value = Array.isArray(inputNodes) ? inputNodes : [inputNodes];
     collapseAll();
+  }
+
+  async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
+    await traverseAsync(baseNode, childrenKey, appendChildrenToNode);
+    toggleSelect(baseNode, isUnselect);
   }
 
   return {

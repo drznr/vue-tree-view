@@ -1,4 +1,4 @@
-import { getNodeChildren, getNodeId, traverse, traverseAsync } from '../utils';
+import { getNodeChildren, getNodeId, traverse } from '../utils';
 import { ref } from 'vue';
 
 type THttpState = { fetching: boolean; error?: Error };
@@ -8,7 +8,6 @@ export function useFetchChildren<TNode>(
   nodes: TNode[],
   idKey: keyof TNode,
   childrenKey: keyof TNode,
-  toggleSelect: (baseNode: TNode, isUnselect: boolean) => void,
   fetchChildren?: (nodeId: string) => Promise<TNode[] | null | undefined>
 ) {
   const nodeIdIsHttpStateMap = ref(new Map<string, THttpState>());
@@ -40,14 +39,8 @@ export function useFetchChildren<TNode>(
     }
   }
 
-  async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
-    await traverseAsync(baseNode, childrenKey, appendChildrenToNode);
-    toggleSelect(baseNode, isUnselect);
-  }
-
   return {
     nodeIdIsHttpStateMap,
     appendChildrenToNode,
-    asyncToggleSelect,
   };
 }
