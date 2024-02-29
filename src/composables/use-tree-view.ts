@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue';
-import { filterNodes, traverseAsync } from '../utils';
+import { filterNodes, getNodeId, traverse, traverseAsync } from '../utils';
 import type { TQueryBy } from '../types';
 import { useSelection } from './use-selection';
 import { useExpanding } from './use-expanding';
@@ -14,18 +14,17 @@ export function useTreeView<TNode>(
 ) {
   const nodes = ref<TNode[]>(Array.isArray(inputNodes) ? inputNodes : [inputNodes]) as Ref<TNode[]>;
 
-  const { selectedNodes, toggleSelect, selectAll, unselectAll } = useSelection<TNode>(
-    selected,
+  const { expandedNodes, toggleExpand, expandAll, collapseAll, search } = useExpanding<TNode>(
     nodes.value,
     idKey,
     childrenKey
   );
 
-  const { expandedNodes, toggleExpand, expandAll, collapseAll, search, expandToSelection } = useExpanding<TNode>(
+  const { selectedNodes, toggleSelect, selectAll, unselectAll } = useSelection<TNode>(
+    selected,
     nodes.value,
     idKey,
-    childrenKey,
-    selectedNodes.value
+    childrenKey
   );
 
   const { nodeIdIsHttpStateMap, appendChildrenToNode } = useFetchChildren<TNode>(
@@ -44,6 +43,25 @@ export function useTreeView<TNode>(
   function resetFilter() {
     nodes.value = Array.isArray(inputNodes) ? inputNodes : [inputNodes];
     collapseAll();
+  }
+
+  function expandToSelection() {
+    collapseAll();
+    if (selectedNodes.value.size === 0) return;
+
+    const path: string[] = [];
+    const handler = (node: TNode, depth: number) => {
+      const nodeId = getNodeId(node, idKey);
+      path[depth] = nodeId;
+
+      if (selectedNodes.value.has(nodeId)) {
+        path.forEach(id => {
+          expandedNodes.value.add(id);
+        });
+      }
+    };
+
+    nodes.value.forEach(node => traverse(node, childrenKey, handler));
   }
 
   async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {

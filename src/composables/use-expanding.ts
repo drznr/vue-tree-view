@@ -2,12 +2,7 @@ import { isQueryByKey, type TQueryBy } from '../types';
 import { getAllNodesValuesUnique, getNodeChildren, getNodeId, searchInNode, traverse } from '../utils';
 import { ref } from 'vue';
 
-export function useExpanding<TNode>(
-  nodes: TNode[],
-  idKey: keyof TNode,
-  childrenKey: keyof TNode,
-  selectedNodes: Set<string>
-) {
+export function useExpanding<TNode>(nodes: TNode[], idKey: keyof TNode, childrenKey: keyof TNode) {
   const expandedNodes = ref(new Set<string>());
 
   function toggleExpand(node: TNode) {
@@ -51,31 +46,11 @@ export function useExpanding<TNode>(
     nodes.forEach(node => traverse(node, childrenKey, handler));
   }
 
-  function expandToSelection() {
-    collapseAll();
-    if (selectedNodes.size === 0) return;
-
-    const path: string[] = [];
-    const handler = (node: TNode, depth: number) => {
-      const nodeId = getNodeId(node, idKey);
-      path[depth] = nodeId;
-
-      if (selectedNodes.has(nodeId)) {
-        path.forEach(id => {
-          expandedNodes.value.add(id);
-        });
-      }
-    };
-
-    nodes.forEach(node => traverse(node, childrenKey, handler));
-  }
-
   return {
     expandedNodes,
     toggleExpand,
     expandAll,
     collapseAll,
     search,
-    expandToSelection,
   };
 }

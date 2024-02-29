@@ -6,8 +6,8 @@ import CustomDataStory from './stories/custom-data.story.vue';
 
 export default {
   title: 'Tree View',
-  // TODO: a way to pass the generic to TreeView and remove assertion
-  component: TreeView as unknown as Record<string, unknown>,
+  // assertion is needed see: https://github.com/storybookjs/storybook/issues/24238
+  component: TreeView as Record<keyof typeof TreeView, unknown>,
   parameters: { options: { showPanel: false } },
   tags: ['autodocs'],
   // TODO: bind SB args | setup controls for stories
