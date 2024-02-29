@@ -36,7 +36,7 @@ const { model, updateModel, handleError } = useStorySetup();
         >
           <div class="d-flex align-center my-2" @click="toggleExpand">
             <v-icon
-              :icon="fetching ? 'mdi-loading' : '$vuetify'"
+              :icon="fetching ? 'mdi-loading' : 'mdi-chevron-down'"
               class="mr-4"
               :color="!fetching && expanded ? 'primary' : 'default'"
               :class="{
