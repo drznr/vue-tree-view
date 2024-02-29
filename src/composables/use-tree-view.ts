@@ -7,8 +7,8 @@ import {
   searchInNode,
   traverse,
   traverseAsync,
-} from './utils';
-import { isQueryByKey, type TQueryBy } from './types';
+} from '../../utils';
+import { isQueryByKey, type TQueryBy } from '../types';
 
 type THttpState = { fetching: boolean; error?: Error };
 type TNodeValue<T> = T[keyof T] extends T[] ? TNodeValue<T> : never;

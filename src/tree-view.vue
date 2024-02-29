@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import type { TQueryBy } from './types';
 import treeNode from './components/tree-node.vue';
 import { debounce, getNodeId } from './utils';
-import { useTreeView } from './use-tree-view';
+import { useTreeView } from './composables/use-tree-view';
 
 defineSlots<{
   controls(props: {
