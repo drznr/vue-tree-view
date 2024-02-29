@@ -4,8 +4,6 @@ import { ASYNC_TREE, getMockChildren } from '../__mocks__/async';
 import TreeView from '../tree-view.vue';
 import { useStorySetup } from './use-story-setup';
 
-// TODO: async search & filter
-
 const { model, updateModel, handleError } = useStorySetup();
 </script>
 

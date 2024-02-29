@@ -94,9 +94,60 @@ describe('<tree-view />', () => {
 
     describe('Expanding', () => {
       const ALL_NODES_COUNT = 81;
+      const mountComponent = (o: MountFnOptions = {}) => mount<typeof TreeView>(TreeView, { ...ASYNC_OPTIONS, ...o });
 
-      testAsyncExpanding(ASYNC_OPTIONS, ALL_NODES_COUNT);
-      testAsyncExpanding(ASYNC_CUSTOM_OPTIONS, ALL_NODES_COUNT, '_id', 'label', 'childs');
+      it('should render all given nodes if specified without fetching children | defaultExpandAll prop', async () => {
+        const wrapper = mountComponent({
+          props: {
+            ...ASYNC_OPTIONS.props,
+            defaultExpandAll: true,
+          },
+        } as MountFnOptions);
+
+        await idle();
+
+        const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
+
+        expect(nodes).toHaveLength(3);
+      });
+
+      it('should allow async expanding all nodes | asyncExpandAll()', async () => {
+        const wrapper = mountComponent();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        await wrapper.vm.asyncExpandAll();
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
+      });
+
+      it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
+        const wrapper = mountComponent({
+          slots: {
+            controls: '',
+            'node-content': `
+                  <template #node-content="scope">
+                    <div @click="scope.toggleExpand" class="slotted-el">
+                      {{ scope.expanded && 'OPEN' }}
+                    </div>
+                  </template>
+                `,
+          },
+        });
+
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+
+        // open root node
+        await wrapper.find('.slotted-el').trigger('click');
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(3);
+        expect(wrapper.findByText('OPEN')?.isVisible()).toBe(true);
+
+        // close root node
+        await wrapper.find('.slotted-el').trigger('click');
+        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
+        expect(wrapper.findByText('OPEN')).toBeNull();
+      });
     });
 
     describe('Selecting', () => {
@@ -159,11 +210,6 @@ describe('<tree-view />', () => {
 
       testAsyncSelection(ASYNC_OPTIONS, ALL_LEAFS_IDS);
       testAsyncSelection(ASYNC_CUSTOM_OPTIONS, ALL_LEAFS_IDS, 'label');
-    });
-
-    describe('Filtering', () => {
-      testAsyncFiltering(ASYNC_OPTIONS);
-      testAsyncFiltering(ASYNC_CUSTOM_OPTIONS, '_id', 'label', 'childs');
     });
   });
 });
@@ -480,118 +526,6 @@ function testFiltering(options: MountFnOptions, searchKey = 'name') {
   });
 }
 
-function testAsyncExpanding(
-  options: MountFnOptions,
-  allNodesCount: number,
-  idKey = 'id',
-  nameKey = 'name',
-  childrenKey = 'children'
-) {
-  const mountComponent = (o: MountFnOptions = {}) => mount<typeof TreeView>(TreeView, { ...options, ...o });
-  it('should render all given nodes if specified without fetching children | defaultExpandAll prop', async () => {
-    const wrapper = mountComponent({
-      props: {
-        ...options.props,
-        defaultExpandAll: true,
-      },
-    } as MountFnOptions);
-
-    await idle();
-
-    const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
-
-    expect(nodes).toHaveLength(3);
-  });
-
-  it('should allow async expanding all nodes | asyncExpandAll()', async () => {
-    const wrapper = mountComponent();
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-    await wrapper.vm.asyncExpandAll();
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(allNodesCount);
-  });
-
-  it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
-    const wrapper = mountComponent({
-      slots: {
-        controls: '',
-        'node-content': `
-              <template #node-content="scope">
-                <div @click="scope.toggleExpand" class="slotted-el">
-                  {{ scope.expanded && 'OPEN' }}
-                </div>
-              </template>
-            `,
-      },
-    });
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-    // open root node
-    await wrapper.find('.slotted-el').trigger('click');
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(3);
-    expect(wrapper.findByText('OPEN')?.isVisible()).toBe(true);
-
-    // close root node
-    await wrapper.find('.slotted-el').trigger('click');
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-    expect(wrapper.findByText('OPEN')).toBeNull();
-  });
-
-  it('should expand to matching nodes by given search fn | asyncSearch()', async () => {
-    const wrapper = mountComponent();
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-    await wrapper.vm.asyncSearch(
-      vi.fn().mockResolvedValue({
-        nodes: [
-          {
-            [idKey]: '1',
-            [nameKey]: 'ROOT',
-            [childrenKey]: [
-              { [idKey]: '1.0', [nameKey]: 'Branch A' },
-              {
-                [idKey]: '1.1',
-                [nameKey]: 'Branch B',
-                [childrenKey]: [
-                  { [idKey]: '1.1.0', [nameKey]: 'a name', [childrenKey]: [] },
-                  {
-                    [idKey]: '1.1.1',
-                    [nameKey]: 'a name',
-                    [childrenKey]: [
-                      { [idKey]: '1.1.1.0', [nameKey]: 'a name', [childrenKey]: [] },
-                      {
-                        [idKey]: '1.1.1.1',
-                        [nameKey]: 'a name',
-                        [childrenKey]: [
-                          { [idKey]: '1.1.1.1.0', [nameKey]: 'leaf' },
-                          { [idKey]: '1.1.1.1.1', [nameKey]: 'the found one' },
-                          { [idKey]: '1.1.1.1.2', [nameKey]: 'leaf' },
-                        ],
-                      },
-                      { [idKey]: '1.1.1.2', [nameKey]: 'a name', [childrenKey]: [] },
-                    ],
-                  },
-                  { [idKey]: '1.1.2', [nameKey]: 'a name', [childrenKey]: [] },
-                ],
-              },
-            ],
-          },
-        ],
-        paths: ['1', '1.1', '1.1.1', '1.1.1.1', '1.1.1.1.1'],
-      })
-    );
-    await flushPromises();
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(12);
-  });
-}
-
 function testAsyncSelection(options: MountFnOptions, allLeafIds: string[], searchKey = 'name') {
   const mountComponent = (o: MountFnOptions = {}) => mount<typeof TreeView>(TreeView, { ...options, ...o });
 
@@ -707,48 +641,6 @@ function testAsyncSelection(options: MountFnOptions, allLeafIds: string[], searc
     // unselected all
     expect(wrapper.props('modelValue')).toEqual([]);
     expect(wrapper.get('.ROOT').text()).toBe('');
-  });
-}
-
-function testAsyncFiltering(options: MountFnOptions, idKey = 'id', nameKey = 'name', childrenKey = 'children') {
-  const mountComponent = (o: MountFnOptions = {}) => mount<typeof TreeView>(TreeView, { ...options, ...o });
-
-  it('should filter nodes by given condition fn | asyncFilter()', async () => {
-    const wrapper = mountComponent();
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-    await wrapper.vm.asyncFilter(
-      vi.fn().mockResolvedValue([
-        {
-          [idKey]: '1',
-          [nameKey]: 'ROOT',
-          [childrenKey]: [
-            {
-              [idKey]: '1.1',
-              [nameKey]: 'Branch B',
-              [childrenKey]: [
-                {
-                  [idKey]: '1.1.1',
-                  [nameKey]: 'some name',
-                  [childrenKey]: [
-                    {
-                      [idKey]: '1.1.1.1',
-                      [nameKey]: 'some other name',
-                      [childrenKey]: [{ [idKey]: '1.1.1.1.1', [nameKey]: 'leaf' }],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ])
-    );
-
-    await flushPromises();
-
-    expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(5);
   });
 }
 

@@ -17,8 +17,6 @@ defineSlots<{
     search: (query: TQueryBy<TNode>) => void;
     asyncExpandAll: () => Promise<void>;
     asyncSelectAll: () => Promise<void>;
-    asyncSearch: (getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) => Promise<void>;
-    asyncFilter: (getFilteredNodes: () => Promise<TNode[]>) => Promise<void>;
   }): unknown;
 
   ['node-content'](props: {
@@ -78,8 +76,6 @@ const {
   asyncExpandAll,
   asyncSelectAll: _asyncSelectAll,
   asyncToggleSelect: _asyncToggleSelect,
-  asyncSearch,
-  asyncFilter,
   appendChildrenToNode: _appendChildrenToNode,
 } = useTreeView(props.nodes, props.modelValue, idKey.value, childrenKey.value, props.fetchChildren);
 
@@ -96,8 +92,6 @@ defineExpose({
   asyncExpandAll,
   asyncSelectAll,
   asyncToggleSelect,
-  asyncSearch,
-  asyncFilter,
 });
 
 function toggleSelect(baseNode: TNode, isUnselect: boolean) {
@@ -152,8 +146,6 @@ const debounceFitler = debounce(filter, props.debounceMs);
     :expand-to-selection="expandToSelection"
     :async-expand-all="asyncExpandAll"
     :async-select-all="asyncSelectAll"
-    :async-search="asyncSearch"
-    :async-filter="asyncFilter"
   />
   <ul>
     <tree-node

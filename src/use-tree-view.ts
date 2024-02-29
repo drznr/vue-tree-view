@@ -162,19 +162,6 @@ export function useTreeView<TNode>(
     selectAll();
   }
 
-  async function asyncFilter(getFilteredNodes: () => Promise<TNode[]>) {
-    resetFilter();
-    nodes.value = await getFilteredNodes();
-    expandAll();
-  }
-
-  async function asyncSearch(getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) {
-    resetFilter();
-    const { nodes: matchedNodes, paths } = await getMatchedNodes();
-    nodes.value = matchedNodes;
-    expandedNodes.value = new Set(paths);
-  }
-
   async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
     await traverseAsync(baseNode, childrenKey, appendChildrenToNode);
     toggleSelect(baseNode, isUnselect);
@@ -202,8 +189,6 @@ export function useTreeView<TNode>(
     appendChildrenToNode,
     asyncExpandAll,
     asyncSelectAll,
-    asyncFilter,
-    asyncSearch,
     asyncToggleSelect,
   };
 }
