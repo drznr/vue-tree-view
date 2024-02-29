@@ -157,10 +157,6 @@ export function useTreeView<TNode>(
     toggleSelect(baseNode, isUnselect);
   }
 
-  async function appendAllNodes() {
-    await Promise.all(nodes.value.map(rootNode => traverseAsync(rootNode, childrenKey, appendChildrenToNode)));
-  }
-
   return {
     nodes,
     expandedNodes,
@@ -177,7 +173,6 @@ export function useTreeView<TNode>(
     filter,
     resetFilter,
     appendChildrenToNode,
-    appendAllNodes,
     asyncToggleSelect,
   };
 }
