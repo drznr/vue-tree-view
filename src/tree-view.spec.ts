@@ -93,7 +93,6 @@ describe('<tree-view />', () => {
     });
 
     describe('Expanding', () => {
-      const ALL_NODES_COUNT = 81;
       const mountComponent = (o: MountFnOptions = {}) => mount<typeof TreeView>(TreeView, { ...ASYNC_OPTIONS, ...o });
 
       it('should render all given nodes if specified without fetching children | defaultExpandAll prop', async () => {
@@ -109,17 +108,6 @@ describe('<tree-view />', () => {
         const nodes = wrapper.findAllByTestId(TREE_NODE_TEST_ID);
 
         expect(nodes).toHaveLength(3);
-      });
-
-      it('should allow async expanding all nodes | asyncExpandAll()', async () => {
-        const wrapper = mountComponent();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
-
-        await wrapper.vm.asyncExpandAll();
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(ALL_NODES_COUNT);
       });
 
       it('should allow manual expanding of nodes and supply correct indication for expanded', async () => {
@@ -565,22 +553,6 @@ function testAsyncSelection(options: MountFnOptions, allLeafIds: string[], searc
     await flushPromises();
 
     expect(wrapper.props('modelValue')).toEqual([]);
-  });
-
-  it('should select all nodes on demand | asyncSelectAll()', async () => {
-    const wrapper = mountComponent({
-      props: {
-        ...options.props,
-        nodes: [options.props?.nodes],
-        modelValue: [],
-        'onUpdate:modelValue': (value: string[]) => wrapper.setProps({ modelValue: value }),
-      },
-    });
-
-    await wrapper.vm.asyncSelectAll();
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.props('modelValue')).toEqual(allLeafIds);
   });
 
   it('should supply correct indications if selected / childs selected', async () => {

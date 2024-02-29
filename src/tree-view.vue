@@ -15,8 +15,6 @@ defineSlots<{
     resetFilter: VoidFunction;
     filter: (query: TQueryBy<TNode>) => void;
     search: (query: TQueryBy<TNode>) => void;
-    asyncExpandAll: () => Promise<void>;
-    asyncSelectAll: () => Promise<void>;
   }): unknown;
 
   ['node-content'](props: {
@@ -73,8 +71,6 @@ const {
   unselectAll: _unselectAll,
   filter,
   resetFilter,
-  asyncExpandAll,
-  asyncSelectAll: _asyncSelectAll,
   asyncToggleSelect: _asyncToggleSelect,
   appendChildrenToNode: _appendChildrenToNode,
 } = useTreeView(props.nodes, props.modelValue, idKey.value, childrenKey.value, props.fetchChildren);
@@ -89,8 +85,6 @@ defineExpose({
   resetFilter,
   selectAll,
   unselectAll,
-  asyncExpandAll,
-  asyncSelectAll,
   asyncToggleSelect,
 });
 
@@ -111,11 +105,6 @@ function unselectAll() {
 
 async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
   await _asyncToggleSelect(baseNode, isUnselect);
-  emit('update:modelValue', Array.from(selectedNodes.value));
-}
-
-async function asyncSelectAll() {
-  await _asyncSelectAll();
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
@@ -144,8 +133,6 @@ const debounceFitler = debounce(filter, props.debounceMs);
     :filter="debounceFitler"
     :reset-filter="resetFilter"
     :expand-to-selection="expandToSelection"
-    :async-expand-all="asyncExpandAll"
-    :async-select-all="asyncSelectAll"
   />
   <ul>
     <tree-node

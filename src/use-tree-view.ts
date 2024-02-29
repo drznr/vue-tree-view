@@ -152,22 +152,12 @@ export function useTreeView<TNode>(
     }
   }
 
-  async function asyncExpandAll() {
-    await _appendAllNodes();
-    expandAll();
-  }
-
-  async function asyncSelectAll() {
-    await _appendAllNodes();
-    selectAll();
-  }
-
   async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
     await traverseAsync(baseNode, childrenKey, appendChildrenToNode);
     toggleSelect(baseNode, isUnselect);
   }
 
-  async function _appendAllNodes() {
+  async function appendAllNodes() {
     await Promise.all(nodes.value.map(rootNode => traverseAsync(rootNode, childrenKey, appendChildrenToNode)));
   }
 
@@ -187,8 +177,7 @@ export function useTreeView<TNode>(
     filter,
     resetFilter,
     appendChildrenToNode,
-    asyncExpandAll,
-    asyncSelectAll,
+    appendAllNodes,
     asyncToggleSelect,
   };
 }
