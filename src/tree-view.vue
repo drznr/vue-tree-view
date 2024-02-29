@@ -1,19 +1,9 @@
 <script setup lang="ts" generic="TNode">
-import { computed, ref, type Ref } from 'vue';
-import { isQueryByKey, type TQueryBy } from './types';
+import { computed } from 'vue';
+import type { TQueryBy } from './types';
 import treeNode from './components/tree-node.vue';
-import {
-  debounce,
-  traverse,
-  getAllNodesValuesUnique,
-  filterNodes,
-  traverseAsync,
-  getNodeChildren,
-  getNodeId,
-  searchInNode,
-} from './utils';
-
-type TNodeValue = TNode[keyof TNode] extends TNode[] ? TNodeValue : never;
+import { debounce, getNodeId } from './utils';
+import { useTreeView } from './use-tree-view';
 
 defineSlots<{
   controls(props: {
@@ -65,6 +55,34 @@ const props = withDefaults(
   }
 );
 
+const emit = defineEmits<{ 'update:modelValue': [payload: string[]]; 'on-error': [error: Error] }>();
+
+const childrenKey = computed(() => (props.childrenKey ?? 'children') as keyof TNode);
+const idKey = computed(() => (props.idKey ?? 'id') as keyof TNode);
+
+const {
+  nodes,
+  expandedNodes,
+  selectedNodes,
+  nodeIdIsHttpStateMap,
+  expandAll,
+  collapseAll,
+  search,
+  toggleExpand,
+  expandToSelection,
+  toggleSelect: _toggleSelect,
+  selectAll: _selectAll,
+  unselectAll: _unselectAll,
+  filter,
+  resetFilter,
+  asyncExpandAll,
+  asyncSelectAll: _asyncSelectAll,
+  asyncToggleSelect: _asyncToggleSelect,
+  asyncSearch,
+  asyncFilter,
+  appendChildrenToNode: _appendChildrenToNode,
+} = useTreeView(props.nodes, props.modelValue, idKey.value, childrenKey.value, props.fetchChildren);
+
 defineExpose({
   expandAll,
   collapseAll,
@@ -82,185 +100,40 @@ defineExpose({
   asyncFilter,
 });
 
-const emit = defineEmits<{ 'update:modelValue': [payload: string[]]; 'on-error': [error: Error] }>();
-
-const nodes = ref<TNode[]>(Array.isArray(props.nodes) ? props.nodes : [props.nodes]) as Ref<TNode[]>;
-
-const expandedNodes = ref(new Set<string>());
-const selectedNodes = ref(new Set<string>(props.modelValue));
-
-const nodeIdIsHttpStateMap = ref(new Map<string, { fetching: boolean; error?: Error }>());
-
-const childrenKey = computed(() => (props.childrenKey ?? 'children') as keyof TNode);
-const idKey = computed(() => (props.idKey ?? 'id') as keyof TNode);
-
-if (props.defaultExpandAll) expandAll();
-
-function toggleExpand(node: TNode) {
-  if (!getNodeChildren(node, childrenKey.value)?.length) return;
-
-  const nodeId = getNodeId(node, idKey.value);
-
-  if (expandedNodes.value.has(nodeId)) expandedNodes.value.delete(nodeId);
-  else expandedNodes.value.add(nodeId);
-}
-
-function expandAll() {
-  const allNodeIds = getAllNodesValuesUnique<TNode, string>(
-    nodes.value,
-    childrenKey.value,
-    idKey.value,
-    node => !!getNodeChildren(node, childrenKey.value)?.length
-  );
-  expandedNodes.value = allNodeIds;
-}
-
-function collapseAll() {
-  expandedNodes.value.clear();
-}
-
-function search(query: TQueryBy<TNode>) {
-  collapseAll();
-
-  const path: string[] = [];
-  const handler = (node: TNode, depth: number) => {
-    path[depth] = getNodeId(node, idKey.value);
-
-    const isMatch = isQueryByKey(query) ? searchInNode(node, query.key, query.term) : query(node);
-    if (isMatch) {
-      path.forEach(nodeId => {
-        expandedNodes.value.add(nodeId);
-      });
-    }
-  };
-
-  nodes.value.forEach(node => traverse(node, childrenKey.value, handler));
-}
-
 function toggleSelect(baseNode: TNode, isUnselect: boolean) {
-  const handler = (node: TNode) => {
-    if (getNodeChildren(node, childrenKey.value)?.length) return;
-
-    const nodeId = getNodeId(node, idKey.value);
-
-    if (isUnselect) selectedNodes.value.delete(nodeId);
-    else selectedNodes.value.add(nodeId);
-  };
-
-  traverse(baseNode, childrenKey.value, handler);
-
+  _toggleSelect(baseNode, isUnselect);
   emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
 function selectAll() {
-  const allNodeIds = getAllNodesValuesUnique<TNode, string>(
-    nodes.value,
-    childrenKey.value,
-    idKey.value,
-    node => !getNodeChildren(node, childrenKey.value)?.length
-  );
-
-  selectedNodes.value = allNodeIds;
-  emit('update:modelValue', Array.from(allNodeIds));
+  _selectAll();
+  emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
 function unselectAll() {
-  selectedNodes.value.clear();
+  _unselectAll();
   emit('update:modelValue', []);
 }
 
-function expandToSelection() {
-  collapseAll();
-  if (selectedNodes.value.size === 0) return;
-
-  const path: string[] = [];
-  const handler = (node: TNode, depth: number) => {
-    const nodeId = getNodeId(node, idKey.value);
-    path[depth] = nodeId;
-
-    if (selectedNodes.value.has(nodeId)) {
-      path.forEach(id => {
-        expandedNodes.value.add(id);
-      });
-    }
-  };
-
-  nodes.value.forEach(node => traverse(node, childrenKey.value, handler));
-}
-
-function filter(query: TQueryBy<TNode>) {
-  resetFilter();
-  nodes.value = filterNodes(nodes.value, childrenKey.value, idKey.value, query);
-  expandAll();
-}
-
-function resetFilter() {
-  nodes.value = Array.isArray(props.nodes) ? props.nodes : [props.nodes];
-  collapseAll();
-}
-
-async function appendChildrenToNode(node: TNode) {
-  const nodeId = getNodeId(node, idKey.value);
-  if (
-    props.fetchChildren &&
-    !getNodeChildren(node, childrenKey.value)?.length &&
-    !nodeIdIsHttpStateMap.value.has(nodeId)
-  ) {
-    try {
-      nodeIdIsHttpStateMap.value.set(nodeId, { fetching: true });
-      const fetchedChildren = await props.fetchChildren?.(nodeId);
-      nodeIdIsHttpStateMap.value.set(nodeId, { fetching: false });
-
-      if (!fetchedChildren?.length) {
-        return;
-      }
-
-      nodes.value.forEach(rootNode => {
-        traverse(rootNode, childrenKey.value, currentNode => {
-          if (getNodeId(currentNode, idKey.value) === nodeId) {
-            currentNode[childrenKey.value] = fetchedChildren as TNodeValue;
-          }
-        });
-      });
-    } catch (originalError) {
-      const error = new Error(`Faild to fetch children for node: [${nodeId}]`, { cause: originalError });
-      emit('on-error', error);
-      nodeIdIsHttpStateMap.value.set(nodeId, { fetching: false, error });
-    }
-  }
-}
-
-async function asyncExpandAll() {
-  await appendAllNodes();
-  expandAll();
+async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
+  await _asyncToggleSelect(baseNode, isUnselect);
+  emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
 async function asyncSelectAll() {
-  await appendAllNodes();
-  selectAll();
+  await _asyncSelectAll();
+  emit('update:modelValue', Array.from(selectedNodes.value));
 }
 
-async function asyncFilter(getFilteredNodes: () => Promise<TNode[]>) {
-  resetFilter();
-  nodes.value = await getFilteredNodes();
-  expandAll();
+async function appendChildrenToNode(node: TNode) {
+  try {
+    await _appendChildrenToNode(node);
+  } catch (error: Error) {
+    emit('on-error', error);
+  }
 }
 
-async function asyncSearch(getMatchedNodes: () => Promise<{ nodes: TNode[]; paths: string[] }>) {
-  resetFilter();
-  const { nodes: matchedNodes, paths } = await getMatchedNodes();
-  nodes.value = matchedNodes;
-  expandedNodes.value = new Set(paths);
-}
-
-async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
-  await traverseAsync(baseNode, childrenKey.value, appendChildrenToNode);
-  toggleSelect(baseNode, isUnselect);
-}
-
-async function appendAllNodes() {
-  await Promise.all(nodes.value.map(rootNode => traverseAsync(rootNode, childrenKey.value, appendChildrenToNode)));
-}
+if (props.defaultExpandAll) expandAll();
 
 const debouncedSearch = debounce(search, props.debounceMs);
 const debounceFitler = debounce(filter, props.debounceMs);

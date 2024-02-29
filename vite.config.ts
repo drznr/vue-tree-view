@@ -35,6 +35,8 @@ export default defineConfig({
         '**/__mocks__/**',
         '**/types.ts/**',
         '**/*.stories.*/**',
+        '**/stories/**',
+        '**/plugins/**',
         'tailwind.config.js',
         'src/index.ts',
       ],

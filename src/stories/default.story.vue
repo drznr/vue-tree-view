@@ -28,7 +28,7 @@ const { model, updateModel, handleError } = useStorySetup();
               density="compact"
               class="mr-2 input"
               hide-details="auto"
-              @update:model-value="(value: string) => (value ? search({ key: 'name', term: value }) : collapseAll())"
+              @update:model-value="value => (value ? search({ key: 'name', term: value }) : collapseAll())"
             />
 
             <v-text-field
@@ -37,7 +37,7 @@ const { model, updateModel, handleError } = useStorySetup();
               density="compact"
               class="mr-2 input"
               hide-details="auto"
-              @update:model-value="(value: string) => (value ? filter({ key: 'name', term: value }) : resetFilter())"
+              @update:model-value="value => (value ? filter({ key: 'name', term: value }) : resetFilter())"
             />
 
             <v-tooltip :text="model.join(', ')" :disabled="!model.length">
@@ -65,7 +65,7 @@ const { model, updateModel, handleError } = useStorySetup();
               hide-details
               color="primary"
               @click.stop=""
-              @update:model-value="(value: boolean) => toggleSelect(!value)"
+              @update:model-value="value => toggleSelect(!value)"
             />
 
             <div class="text-subtitle-1">
