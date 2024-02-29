@@ -54,7 +54,7 @@ const { model, updateModel, handleError } = useStorySetup();
               icon="$vuetify"
               :color="expanded ? 'primary' : 'default'"
               class="mr-4 primary"
-              :class="{ 'rotate-90': expanded, invisible: !node.children?.length }"
+              :class="{ 'rotate-90': !expanded, invisible: !node.children?.length }"
             />
 
             <v-checkbox

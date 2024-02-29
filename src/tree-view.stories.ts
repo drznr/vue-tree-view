@@ -17,6 +17,6 @@ type Story = StoryFn<typeof TreeView>;
 
 export const Default: Story = () => DefaultStory;
 
-export const Async: Story = () => AsyncStory;
-
 export const CustomData: Story = () => CustomDataStory;
+
+export const Async: Story = () => AsyncStory;
