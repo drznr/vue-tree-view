@@ -7,7 +7,7 @@ import {
   searchInNode,
   traverse,
   traverseAsync,
-} from '../../utils';
+} from '../utils';
 import { isQueryByKey, type TQueryBy } from '../types';
 
 type THttpState = { fetching: boolean; error?: Error };
