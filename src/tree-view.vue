@@ -274,7 +274,9 @@ async function asyncToggleSelect(baseNode: TNode, isUnselect: boolean) {
 async function appendChildrenToNode(node: TNode) {
   try {
     await _appendChildrenToNode(node);
-  } catch (error: Error) {
+  } catch (originalError) {
+    const nodeId = getNodeId(node, idKey.value);
+    const error = new Error(`Faild to fetch children for node: [${nodeId}]`, { cause: originalError });
     emit('on-error', error);
   }
 }

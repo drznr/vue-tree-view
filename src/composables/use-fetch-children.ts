@@ -1,7 +1,7 @@
 import { getNodeChildren, getNodeId, traverse } from '../utils';
 import { ref } from 'vue';
 
-type THttpState = { fetching: boolean; error?: Error };
+type THttpState = { fetching: boolean; error?: unknown };
 type TNodeValue<T> = T[keyof T] extends T[] ? TNodeValue<T> : never;
 
 export function useFetchChildren<TNode>(
@@ -31,8 +31,7 @@ export function useFetchChildren<TNode>(
             }
           });
         });
-      } catch (originalError) {
-        const error = new Error(`Faild to fetch children for node: [${nodeId}]`, { cause: originalError });
+      } catch (error) {
         nodeIdIsHttpStateMap.value.set(nodeId, { fetching: false, error });
         throw error;
       }
