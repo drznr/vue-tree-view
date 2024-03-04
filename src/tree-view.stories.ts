@@ -10,7 +10,6 @@ export default {
   component: TreeView as Record<keyof typeof TreeView, unknown>,
   parameters: { options: { showPanel: false } },
   tags: ['autodocs'],
-  // TODO: bind SB args | setup controls for stories
 } satisfies Meta<typeof TreeView>;
 
 type Story = StoryFn<typeof TreeView>;
