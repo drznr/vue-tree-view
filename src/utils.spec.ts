@@ -11,6 +11,7 @@ import {
   getNodeChildren,
   getNodeId,
   searchInNode,
+  throttle,
 } from './utils';
 
 describe('Tree View Utils', () => {
@@ -66,6 +67,63 @@ describe('Tree View Utils', () => {
 
       vi.advanceTimersByTime(1);
       expect(callback).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('throttle()', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should call the original function immediately', () => {
+      const originalFunctionSpy = vi.fn();
+      const throttledFunction = throttle(originalFunctionSpy, 100);
+
+      throttledFunction();
+
+      expect(originalFunctionSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call the original function within the throttle time', () => {
+      const originalFunctionSpy = vi.fn();
+      const throttledFunction = throttle(originalFunctionSpy, 100);
+
+      throttledFunction();
+      throttledFunction();
+      throttledFunction();
+
+      expect(originalFunctionSpy).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(50);
+
+      expect(originalFunctionSpy).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(50);
+
+      expect(originalFunctionSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call the original function multiple times after the throttle time', () => {
+      const originalFunctionSpy = vi.fn();
+      const throttledFunction = throttle(originalFunctionSpy, 100);
+
+      throttledFunction();
+      throttledFunction();
+      throttledFunction();
+
+      vi.advanceTimersByTime(100);
+
+      expect(originalFunctionSpy).toHaveBeenCalledTimes(1);
+
+      throttledFunction();
+
+      vi.advanceTimersByTime(100);
+
+      expect(originalFunctionSpy).toHaveBeenCalledTimes(2);
     });
   });
 
