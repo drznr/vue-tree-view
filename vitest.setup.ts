@@ -17,4 +17,3 @@ const customBehaviors = (wrapper: VueWrapper) => ({
 });
 
 config.plugins.VueWrapper.install(customBehaviors);
-global.structuredClone = (value: unknown) => JSON.parse(JSON.stringify(value));
