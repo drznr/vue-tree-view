@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="TNode">
 import { computed } from 'vue';
 import type { TQueryBy } from './types';
-import treeNode from './components/tree-node.vue';
+import TreeNode from './components/tree-node.vue';
 import { debounce, getNodeId } from './utils';
 import { useTreeView } from './composables/use-tree-view';
 
