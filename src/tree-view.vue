@@ -136,7 +136,7 @@ const props = withDefaults(
      */
     transitionMs?: number;
     /**
-     * cancel transition, will improve performance, recommendad for big trees
+     * cancel transition, will improve performance, recommended for large trees
      * @default false
      */
     noTransition?: boolean;
@@ -145,6 +145,12 @@ const props = withDefaults(
      * @default 24
      */
     indentPx?: number;
+    /**
+     * render only nodes that are in viewport
+     * recommended for large trees
+     * @default true
+     */
+    optimizeExpanding?: boolean;
     /**
      * if supplied will be used to fetch node children on creating
      * and to recursively select nodes
@@ -157,6 +163,7 @@ const props = withDefaults(
     debounceMs: 300,
     transitionMs: 300,
     indentPx: 24,
+    optimizeExpanding: false,
   }
 );
 
@@ -309,6 +316,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :indent-px="indentPx"
       :transition-ms="transitionMs"
       :no-transition="noTransition"
+      :optimize-expanding="optimizeExpanding"
       :id-key="idKey"
       :children-key="childrenKey"
       @created="appendChildrenToNode"

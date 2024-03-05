@@ -11,7 +11,14 @@ const { model, updateModel, handleError } = useStorySetup();
 <template>
   <v-app>
     <v-main>
-      <tree-view :nodes="ATC_TREE" :model-value="model" @update:model-value="updateModel" @on-error="handleError">
+      <tree-view
+        :nodes="ATC_TREE"
+        :model-value="model"
+        :transition-ms="0"
+        optimize-expanding
+        @update:model-value="updateModel"
+        @on-error="handleError"
+      >
         <template
           #controls="{ collapseAll, expandAll, search, expandToSelection, selectAll, unselectAll, filter, resetFilter }"
         >
