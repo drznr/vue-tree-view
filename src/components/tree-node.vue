@@ -17,7 +17,6 @@ const props = withDefaults(
     indentPx: number;
     transitionMs: number;
     optimizeExpanding: boolean;
-    noTransition?: boolean;
     rootElement?: keyof HTMLElementTagNameMap;
   }>(),
   {
@@ -62,7 +61,7 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
       :indeterminate="isChildSelected"
     />
 
-    <Transition :name="noTransition ? '' : 'slide-fade'">
+    <Transition :name="transitionMs ? 'slide-fade' : ''">
       <template v-if="isVisible && nodeChildren?.length && isExpanded">
         <ul :style="{ marginInlineStart: indentPx + 'px' }">
           <tree-node
@@ -76,7 +75,6 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
             :children-key="childrenKey"
             :indent-px="indentPx"
             :transition-ms="transitionMs"
-            :no-transition="noTransition"
             @created="emit('created', $event)"
           >
             <template #node-content="scope">

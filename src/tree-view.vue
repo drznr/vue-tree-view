@@ -131,15 +131,10 @@ const props = withDefaults(
     debounceMs?: number;
     /**
      * number of milliseconds to be used for transitioning
-     * node expanding
+     * node expanding, 0 will cancel transition
      * @default 300
      */
     transitionMs?: number;
-    /**
-     * cancel transition, will improve performance, recommended for large trees
-     * @default false
-     */
-    noTransition?: boolean;
     /**
      * number of pixels to be used to indent tree nested levels
      * @default 24
@@ -315,7 +310,6 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :selected-nodes="selectedNodes"
       :indent-px="indentPx"
       :transition-ms="transitionMs"
-      :no-transition="noTransition"
       :optimize-expanding="optimizeExpanding"
       :id-key="idKey"
       :children-key="childrenKey"
