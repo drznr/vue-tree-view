@@ -296,7 +296,8 @@ function testExpanding(options: MountFnOptions, allNodesCount: number, searchKey
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(1);
 
     // search with condition Fn
-    wrapper.vm.search((node: typeof options.props.nodes) => node[searchKey]?.includes('lizard'));
+    const props = options.props!;
+    wrapper.vm.search((node: typeof props.nodes) => node[searchKey]?.includes('lizard'));
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findAllByTestId(TREE_NODE_TEST_ID)).toHaveLength(8);
