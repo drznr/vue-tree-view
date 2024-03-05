@@ -1,8 +1,8 @@
 import type { Meta, StoryFn } from '@storybook/vue3';
-import TreeView from './tree-view.vue';
-import AsyncStory from './stories/async.story.vue';
-import LargeTreeStory from './stories/large-tree.story.vue';
-import DefaultStory from './stories/default.story.vue';
+import TreeView from '../tree-view.vue';
+import AsyncStory from './async.story.vue';
+import LargeTreeStory from './large-tree.story.vue';
+import DefaultStory from './default.story.vue';
 
 export default {
   title: 'Tree View',
