@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import TreeView from '../tree-view.vue';
 import { CUSTOM_DATA_ANIMALS_TREE } from '../__mocks__/custom-data';
