@@ -141,9 +141,9 @@ const props = withDefaults(
      */
     indentPx?: number;
     /**
-     * render only nodes that are in viewport
-     * recommended for large trees
-     * @default true
+     * render only nodes that are in viewport, uses IntersectionObserver API
+     * recommended for large trees that causes heavy rendering
+     * @default false
      */
     optimizeExpanding?: boolean;
     /**
