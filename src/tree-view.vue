@@ -141,6 +141,12 @@ const props = withDefaults(
      */
     indentPx?: number;
     /**
+     * render only nodes that are in viewport, uses IntersectionObserver API
+     * recommended for large trees that causes heavy rendering
+     * @default false
+     */
+    optimizeExpanding?: boolean;
+    /**
      * if supplied will be used to fetch node children on creating
      * and to recursively select nodes
      * @default undefined
@@ -152,6 +158,7 @@ const props = withDefaults(
     debounceMs: 300,
     transitionMs: 300,
     indentPx: 24,
+    optimizeExpanding: false,
   }
 );
 
@@ -303,6 +310,7 @@ const debounceFitler = debounce(filter, props.debounceMs);
       :selected-nodes="selectedNodes"
       :indent-px="indentPx"
       :transition-ms="transitionMs"
+      :optimize-expanding="optimizeExpanding"
       :id-key="idKey"
       :children-key="childrenKey"
       @created="appendChildrenToNode"

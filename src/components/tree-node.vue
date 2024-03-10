@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { getNodeChildren, getNodeId, traverseAndCheck, traverseAndCheckAll } from '../utils';
+import { useElementVisibility } from '../composables/use-element-visibility';
 
 defineSlots<{
   ['node-content'](props: { node: T; expanded: boolean; selected: boolean; indeterminate: boolean }): unknown;
@@ -15,6 +16,7 @@ const props = withDefaults(
     childrenKey: keyof T;
     indentPx: number;
     transitionMs: number;
+    optimizeExpanding: boolean;
     rootElement?: keyof HTMLElementTagNameMap;
   }>(),
   {
@@ -23,6 +25,9 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<(event: 'created', node: T) => void>();
+
+const elementRef = ref<HTMLElement | null>(null);
+const isVisible = props.optimizeExpanding ? useElementVisibility(elementRef) : true;
 
 const isExpanded = computed(() => props.expandedNodes.has(getNodeId(props.node, props.idKey)));
 const isSelected = computed(() =>
@@ -47,7 +52,7 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
 </script>
 
 <template>
-  <component :is="rootElement" :data-testid="TREE_NODE_TEST_ID">
+  <component :is="rootElement" ref="elementRef" :data-testid="TREE_NODE_TEST_ID">
     <slot
       name="node-content"
       :node="node as T"
@@ -57,7 +62,7 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
     />
 
     <Transition :name="transitionMs ? 'slide-fade' : ''">
-      <template v-if="nodeChildren?.length && isExpanded">
+      <template v-if="isVisible && nodeChildren?.length && isExpanded">
         <ul :style="{ marginInlineStart: indentPx + 'px' }">
           <tree-node
             v-for="childNode in nodeChildren"
@@ -65,6 +70,7 @@ export const TREE_NODE_TEST_ID = 'tree-node-test-id';
             :node="childNode as typeof node"
             :expanded-nodes="expandedNodes"
             :selected-nodes="selectedNodes"
+            :optimize-expanding="optimizeExpanding"
             :id-key="idKey"
             :children-key="childrenKey"
             :indent-px="indentPx"

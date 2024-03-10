@@ -56,11 +56,25 @@ export function traverseAndCheckAll<T>(node: T, childrenKey: keyof T, conditionF
 }
 
 export function debounce<A extends unknown[], R>(fn: (...args: A) => R, ms: number) {
-  let timeoutId: ReturnType<typeof setTimeout>;
+  let timeoutId: NodeJS.Timeout;
 
   return function (...args: A) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), ms);
+  };
+}
+
+export function throttle<A extends unknown[], R>(fn: (...args: A) => R, ms: number) {
+  let timer: NodeJS.Timeout | null = null;
+
+  return (...args: A) => {
+    if (timer === null) {
+      fn(...args);
+
+      timer = setTimeout(() => {
+        timer = null;
+      }, ms);
+    }
   };
 }
 
